@@ -12,5 +12,6 @@ namespace Jared_s_Graduation_Project
         public int StoreID { get; set; }
         public int ProductID { get; set; }
         public int Quantity { get; set; }
+        public int ReservedQuantity { get; set; }
     }
 }
