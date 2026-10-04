@@ -1,0 +1,14 @@
+﻿@model List<Jared_s_Graduation_Project.Product>
+
+<h1>Products</h1>
+
+@foreach (var product in Model)
+{
+    <div>
+        <h2>@product.ProductName</h2>
+        <p>Category: @product.ProductCategory</p>
+        <p>Price: @product.ProductPrice.ToString("C")</p>
+    </div>
+
+    <hr />
+}
