@@ -1,0 +1,11 @@
+﻿@model List<Jared_s_Graduation_Project.CartItem>
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<h1>Shopping Cart</h1>
+
+@foreach (var item in Model)
+{
+    <p>Product ID: @item.ProductID | Quantity: @item.Quantity</p>
+}

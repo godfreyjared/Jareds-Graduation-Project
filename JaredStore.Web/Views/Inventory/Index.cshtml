@@ -1,0 +1,25 @@
+﻿@model List<Jared_s_Graduation_Project.Inventory>
+@{
+    ViewData["Title"] = "Inventory";
+}
+
+<h1>Store Inventory</h1>
+
+<p>Select a store to view its available inventory.</p>
+<a href="/Inventory?storeID=1">Houston</a>
+<br />
+<a href="/Inventory?storeID=2">Dallas</a>
+<br />
+<a href="/Inventory?storeID=3">San Antonio</a>
+<p>Selected Store ID: @ViewBag.StoreID</p>
+@foreach (var item in Model)
+{
+    var product = ((List<Jared_s_Graduation_Project.Product>)ViewBag.Products)
+        .FirstOrDefault(p => p.ProductID == item.ProductID);
+
+    <p>
+        @product?.ProductName |
+        Price: @product?.ProductPrice.ToString("C") |
+        Quantity: @item.Quantity
+    </p>
+}
