@@ -39,50 +39,62 @@ var products = StoreData.Products;
 var inventory = StoreData.Inventory;
 
 
-// Testing location
+bool runTests = false;
 
-var cart = new List<CartItem>();
+if (runTests)
+{
 
-AddToCart(cart, inventory, 1, 5, 2);
+    // Testing location
 
-DisplayOrderSummary(cart, products);
+    AddProductToInventory(inventory, 1, 5, 1);
 
-Checkout(cart, inventory, 1);
+    var cart = new List<CartItem>();
 
-MoveInventory(inventory, 1, 2, 1, 2);
+    AddToCart(cart, inventory, 1, 5, 2);
 
-DisplayInventory(inventory, products, 1);
+    DisplayOrderSummary(cart, products);
 
-MoveItemToReserve(inventory, 1, 1, 2);
+    Checkout(cart, inventory, 1);
 
-ReturnItemFromReserve(inventory, 1, 1, 2);
+    MoveInventory(inventory, 1, 2, 1, 2);
 
-CreateProduct(products, 9, "New Product", "Category", 49.99m);
+    DisplayInventory(inventory, products, 1);
 
-UpdateProduct(products, 9, "Updated Product", "Updated Category", 59.99m);
+    MoveItemToReserve(inventory, 1, 1, 2);
 
-DisplayProduct(products, 9);
+    ReturnItemFromReserve(inventory, 1, 1, 2);
 
-// End of testing location
+    CreateProduct(products, 9, "New Product", "Category", 49.99m);
 
+    UpdateProduct(products, 9, "Updated Product", "Updated Category", 59.99m);
+
+    DisplayProduct(products, 9);
+
+    // End of testing location
 
 // Message and variable Center.
 
 var updatedProduct = products.FirstOrDefault(p => p.ProductID == 9);
 
-Console.WriteLine($"Updated Name: {updatedProduct.ProductName}");
-Console.WriteLine($"Updated Category: {updatedProduct.ProductCategory}");
-Console.WriteLine($"Updated Price: {updatedProduct.ProductPrice:C}");
+if (updatedProduct != null)
+{
+    Console.WriteLine($"Updated Name: {updatedProduct.ProductName}");
+    Console.WriteLine($"Updated Category: {updatedProduct.ProductCategory}");
+    Console.WriteLine($"Updated Price: {updatedProduct.ProductPrice:C}");
+}
 
 var reservedCPU = inventory.FirstOrDefault(item =>
     item.StoreID == 1 &&
     item.ProductID == 1);
 
-Console.WriteLine($"Available CPUs after return: {reservedCPU.Quantity}");
-Console.WriteLine($"Reserved CPUs after return: {reservedCPU.ReservedQuantity}");
+if (reservedCPU != null)
+{
+    Console.WriteLine($"Available CPUs after return: {reservedCPU.Quantity}");
+    Console.WriteLine($"Reserved CPUs after return: {reservedCPU.ReservedQuantity}");
 
-Console.WriteLine($"Available CPUs: {reservedCPU.Quantity}");
-Console.WriteLine($"Reserved CPUs: {reservedCPU.ReservedQuantity}");
+    Console.WriteLine($"Available CPUs: {reservedCPU.Quantity}");
+    Console.WriteLine($"Reserved CPUs: {reservedCPU.ReservedQuantity}");
+}
 
 var houstonCPU = inventory.FirstOrDefault(item =>
     item.StoreID == 1 &&
@@ -92,19 +104,32 @@ var dallasCPU = inventory.FirstOrDefault(item =>
     item.StoreID == 2 &&
     item.ProductID == 1);
 
-Console.WriteLine($"Houston CPUs: {houstonCPU.Quantity}");
-Console.WriteLine($"Dallas CPUs: {dallasCPU.Quantity}");
+if (houstonCPU != null)
+{
+    Console.WriteLine($"Houston CPUs: {houstonCPU.Quantity}");
+}
+
+if (dallasCPU != null)
+{
+    Console.WriteLine($"Dallas CPUs: {dallasCPU.Quantity}");
+}
 
 var gpuInventory = inventory.FirstOrDefault(item =>
     item.StoreID == 1 &&
     item.ProductID == 5);
 
-Console.WriteLine($"GPUs remaining in Houston: {gpuInventory.Quantity}");
+if (gpuInventory != null)
+{
+    Console.WriteLine($"GPUs remaining in Houston: {gpuInventory.Quantity}");
+}
 
 var createdProduct = products.FirstOrDefault(p =>
     p.ProductID == 9);
 
-Console.WriteLine($"Created Product: {createdProduct.ProductName}");
+if (createdProduct != null)
+{
+    Console.WriteLine($"Created Product: {createdProduct.ProductName}");
+}
 
 // End of Message and variable center.
 
@@ -113,9 +138,10 @@ Console.WriteLine($"Created Product: {createdProduct.ProductName}");
 // used during runtime. We want the product to delete after everything
 // needed has been used for display testing.
 
-DeleteProduct(products, 9);
 
+    DeleteProduct(products, 9);
 
+}
 // Method Center (Methods may also include messages).
 
 static void AddToCart(

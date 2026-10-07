@@ -1,5 +1,6 @@
 ﻿@model List<Jared_s_Graduation_Project.CartItem>
 @using Jared_s_Graduation_Project
+
 @{
     ViewData["Title"] = "Cart";
     var products = (List<Product>)ViewBag.Products;
@@ -19,25 +20,29 @@
 @foreach (var item in Model)
 {
     var product = products.FirstOrDefault(p => p.ProductID == item.ProductID);
-    grandTotal += product.ProductPrice * item.Quantity;
 
-    <p>
-        @product.ProductName |
-        Quantity: @item.Quantity |
-        Price: @product.ProductPrice.ToString("C") |
-        Total: @((product.ProductPrice * item.Quantity).ToString("C"))
-    </p>
+    if (product != null)
+    {
+        grandTotal += product.ProductPrice * item.Quantity;
 
-    <a asp-controller="Cart"
-       asp-action="RemoveFromCart"
-       asp-route-productID="@item.ProductID">
-        Remove
-    </a>
+        <p>
+            @product.ProductName |
+            Quantity: @item.Quantity |
+            Price: @product.ProductPrice.ToString("C") |
+            Total: @((product.ProductPrice * item.Quantity).ToString("C"))
+        </p>
+
+        <a asp-controller="Cart"
+           asp-action="RemoveFromCart"
+           asp-route-productID="@item.ProductID">
+            Remove
+        </a>
+    }
 }
 
 <h3>Order Total: @grandTotal.ToString("C")</h3>
+
 <a asp-controller="Cart"
    asp-action="Checkout">
     Checkout
 </a>
-
