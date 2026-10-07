@@ -8,21 +8,9 @@ namespace JaredStore.Web.Controllers
     {
         private static List<CartItem> cart = new List<CartItem>();
 
-        private static List<Product> products = new List<Product>
-        {
-            new Product { ProductID = 1, ProductName = "AMD Ryzen 7 5700X", ProductCategory = "CPU", ProductPrice = 179.99m },
-            new Product { ProductID = 2, ProductName = "Cooler Master Hyper 212", ProductCategory = "CPU Cooler", ProductPrice = 39.99m },
-            new Product { ProductID = 3, ProductName = "MSI B550 Tomahawk", ProductCategory = "Motherboard", ProductPrice = 159.99m },
-            new Product { ProductID = 4, ProductName = "Corsair Vengeance 32GB DDR4", ProductCategory = "RAM", ProductPrice = 74.99m },
-            new Product { ProductID = 5, ProductName = "NVIDIA GeForce RTX 5060", ProductCategory = "GPU", ProductPrice = 299.99m },
-            new Product { ProductID = 6, ProductName = "Samsung 990 EVO 1TB NVMe SSD", ProductCategory = "Storage", ProductPrice = 89.99m },
-            new Product { ProductID = 7, ProductName = "Corsair RM750e 750W", ProductCategory = "Power Supply", ProductPrice = 109.99m },
-            new Product { ProductID = 8, ProductName = "NZXT H5 Flow", ProductCategory = "Case", ProductPrice = 94.99m }
-        };
-
         public IActionResult Index()
         {
-            ViewBag.Products = products;
+            ViewBag.Products = StoreData.Products;
             return View(cart);
         }
 
@@ -32,45 +20,47 @@ namespace JaredStore.Web.Controllers
                 item.StoreID == 1 &&
                 item.ProductID == productID);
 
+            if (inventoryItem == null || inventoryItem.Quantity <= 0)
+            {
+                ViewBag.Products = StoreData.Products;
+                ViewBag.Message = "Not enough inventory available.";
+
+                return View("Index", cart);
+            }
+
             var existingItem = cart.FirstOrDefault(item =>
                 item.ProductID == productID);
 
-            int quantityAlreadyInCart = 0;
-
             if (existingItem != null)
-                {
-                    quantityAlreadyInCart = existingItem.Quantity;
-                }
-
-            if (inventoryItem == null || quantityAlreadyInCart >= inventoryItem.Quantity)
-                {
-                    ViewBag.Products = products;
-                    ViewBag.Message = "Not enough inventory available.";
-
-                    return View("Index", cart);
-                }
-
-            if (existingItem != null)
-                {
-                    existingItem.Quantity++;
-                }
+            {
+                existingItem.Quantity++;
+            }
             else
+            {
+                cart.Add(new CartItem
                 {
-                    cart.Add(new CartItem
-                    {
-                        ProductID = productID,
-                        Quantity = 1
-                    });
-                }
+                    ProductID = productID,
+                    Quantity = 1
+                });
+            }
 
-            ViewBag.Products = products;
+            // Move one item from available inventory to reserved inventory
+            inventoryItem.Quantity--;
+            inventoryItem.ReservedQuantity++;
+
+            ViewBag.Products = StoreData.Products;
 
             return View("Index", cart);
         }
 
         public IActionResult RemoveFromCart(int productID)
         {
-            var existingItem = cart.FirstOrDefault(item => item.ProductID == productID);
+            var existingItem = cart.FirstOrDefault(item =>
+                item.ProductID == productID);
+
+            var inventoryItem = StoreData.Inventory.FirstOrDefault(item =>
+                item.StoreID == 1 &&
+                item.ProductID == productID);
 
             if (existingItem != null)
             {
@@ -81,6 +71,13 @@ namespace JaredStore.Web.Controllers
                 else
                 {
                     cart.Remove(existingItem);
+                }
+
+                // Return one reserved item back to available inventory
+                if (inventoryItem != null && inventoryItem.ReservedQuantity > 0)
+                {
+                    inventoryItem.Quantity++;
+                    inventoryItem.ReservedQuantity--;
                 }
             }
 
@@ -93,7 +90,7 @@ namespace JaredStore.Web.Controllers
 
             foreach (var cartItem in cart)
             {
-                var product = products.FirstOrDefault(p =>
+                var product = StoreData.Products.FirstOrDefault(p =>
                     p.ProductID == cartItem.ProductID);
 
                 if (product != null)
@@ -107,7 +104,9 @@ namespace JaredStore.Web.Controllers
 
                 if (inventoryItem != null)
                 {
-                    inventoryItem.Quantity -= cartItem.Quantity;
+                    // Items were already removed from available inventory
+                    // when they were added to the cart.
+                    inventoryItem.ReservedQuantity -= cartItem.Quantity;
                 }
             }
 

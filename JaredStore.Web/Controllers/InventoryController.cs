@@ -1,6 +1,6 @@
-﻿using Jared_s_Graduation_Project;
+﻿using Microsoft.AspNetCore.Mvc;
+using Jared_s_Graduation_Project;
 using JaredStore.Web.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace JaredStore.Web.Controllers
 {
@@ -10,25 +10,71 @@ namespace JaredStore.Web.Controllers
         {
             ViewBag.StoreID = storeID;
 
-            var products = new List<Product>
-            {
-                new Product { ProductID = 1, ProductName = "AMD Ryzen 7 5700X", ProductCategory = "CPU", ProductPrice = 179.99m },
-                new Product { ProductID = 2, ProductName = "Cooler Master Hyper 212", ProductCategory = "CPU Cooler", ProductPrice = 39.99m },
-                new Product { ProductID = 3, ProductName = "MSI B550 Tomahawk", ProductCategory = "Motherboard", ProductPrice = 159.99m },
-                new Product { ProductID = 4, ProductName = "Corsair Vengeance 32GB DDR4", ProductCategory = "RAM", ProductPrice = 74.99m },
-                new Product { ProductID = 5, ProductName = "NVIDIA GeForce RTX 5060", ProductCategory = "GPU", ProductPrice = 299.99m },
-                new Product { ProductID = 6, ProductName = "Samsung 990 EVO 1TB NVMe SSD", ProductCategory = "Storage", ProductPrice = 89.99m },
-                new Product { ProductID = 7, ProductName = "Corsair RM750e 750W", ProductCategory = "Power Supply", ProductPrice = 109.99m },
-                new Product { ProductID = 8, ProductName = "NZXT H5 Flow", ProductCategory = "Case", ProductPrice = 94.99m }
-            };
+           
 
             var storeInventory = StoreData.Inventory
                 .Where(item => item.StoreID == storeID)
                 .ToList();
 
-            ViewBag.Products = products;
+            ViewBag.Products = StoreData.Products;
 
             return View(storeInventory);
+        }
+
+        public IActionResult MoveInventory(
+            
+            int fromStoreID,
+            int toStoreID,
+            int productID,
+            int quantity)
+        
+        {
+            var fromInventoryItem = StoreData.Inventory.FirstOrDefault(item =>
+                item.StoreID == fromStoreID &&
+                item.ProductID == productID);
+
+            var toInventoryItem = StoreData.Inventory.FirstOrDefault(item =>
+                item.StoreID == toStoreID &&
+                item.ProductID == productID);
+
+            if (fromStoreID == toStoreID)
+            {
+                TempData["Message"] = "Please select two different stores.";
+
+                return RedirectToAction("Index", new { storeID = fromStoreID });
+            }
+
+            if (fromInventoryItem == null || toInventoryItem == null)
+            {
+                TempData["Message"] = "Product could not be found.";
+
+                return RedirectToAction("Index", new { storeID = fromStoreID });
+            }
+
+            if (quantity <= 0 || fromInventoryItem.Quantity < quantity)
+            {
+                TempData["Message"] = "Not enough inventory available to complete the transfer.";
+
+                return RedirectToAction("Index", new { storeID = fromStoreID });
+            }
+
+            fromInventoryItem.Quantity -= quantity;
+            toInventoryItem.Quantity += quantity;
+
+            var product = StoreData.Products.FirstOrDefault(p => p.ProductID == productID);
+
+            string fromStoreName = fromStoreID == 1 ? "Houston" :
+                   fromStoreID == 2 ? "Dallas" :
+                   "San Antonio";
+
+            string toStoreName = toStoreID == 1 ? "Houston" :
+                   toStoreID == 2 ? "Dallas" :
+                   "San Antonio";
+
+            TempData["Message"] =
+                $"Successfully moved {quantity} {product?.ProductName} from {fromStoreName} to {toStoreName}.";
+
+            return RedirectToAction("Index", new { storeID = fromStoreID });
         }
     }
 }

@@ -7,6 +7,11 @@
 
 <h1>Shopping Cart</h1>
 
+@if (ViewBag.Message != null)
+{
+    <p>@ViewBag.Message</p>
+}
+
 @{
     decimal grandTotal = 0;
 }
@@ -35,3 +40,4 @@
    asp-action="Checkout">
     Checkout
 </a>
+

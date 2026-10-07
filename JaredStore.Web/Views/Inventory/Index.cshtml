@@ -1,25 +1,79 @@
 ﻿@model List<Jared_s_Graduation_Project.Inventory>
+@using Jared_s_Graduation_Project
+
 @{
     ViewData["Title"] = "Inventory";
+    var products = (List<Product>)ViewBag.Products;
 }
 
 <h1>Store Inventory</h1>
 
+@if (TempData["Message"] != null)
+{
+    <p>@TempData["Message"]</p>
+}
+
 <p>Select a store to view its available inventory.</p>
-<a href="/Inventory?storeID=1">Houston</a>
+
+<a asp-controller="Inventory" asp-action="Index" asp-route-storeID="1">Houston</a>
 <br />
-<a href="/Inventory?storeID=2">Dallas</a>
+
+<a asp-controller="Inventory" asp-action="Index" asp-route-storeID="2">Dallas</a>
 <br />
-<a href="/Inventory?storeID=3">San Antonio</a>
+
+<a asp-controller="Inventory" asp-action="Index" asp-route-storeID="3">San Antonio</a>
+
 <p>Selected Store ID: @ViewBag.StoreID</p>
+
 @foreach (var item in Model)
 {
-    var product = ((List<Jared_s_Graduation_Project.Product>)ViewBag.Products)
-        .FirstOrDefault(p => p.ProductID == item.ProductID);
+    var product = products.FirstOrDefault(p => p.ProductID == item.ProductID);
 
-    <p>
-        @product?.ProductName |
-        Price: @product?.ProductPrice.ToString("C") |
-        Quantity: @item.Quantity
-    </p>
+    if (product != null)
+    {
+        <p>
+            @product.ProductName |
+            Price: @product.ProductPrice.ToString("C") |
+            Quantity: @item.Quantity
+        </p>
+    }
 }
+
+<hr />
+
+<h3>Move Inventory Between Stores</h3>
+
+<form asp-controller="Inventory"
+      asp-action="MoveInventory"
+      method="post">
+
+    <label>From Store:</label>
+    <select name="fromStoreID">
+        <option value="1">Houston</option>
+        <option value="2">Dallas</option>
+        <option value="3">San Antonio</option>
+    </select>
+
+    <label>To Store:</label>
+    <select name="toStoreID">
+        <option value="1">Houston</option>
+        <option value="2">Dallas</option>
+        <option value="3">San Antonio</option>
+    </select>
+
+    <label>Product:</label>
+    <select name="productID">
+        @foreach (var product in products)
+        {
+            <option value="@product.ProductID">
+                @product.ProductName
+            </option>
+        }
+    </select>
+
+    <label>Quantity:</label>
+    <input type="number" name="quantity" />
+
+    <button type="submit">Move Inventory</button>
+
+</form>
