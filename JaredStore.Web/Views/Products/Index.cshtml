@@ -1,13 +1,29 @@
 ﻿@model List<Jared_s_Graduation_Project.Product>
+@using Jared_s_Graduation_Project
+
+@{
+    var inventory = (List<Inventory>)ViewBag.Inventory;
+}
 
 <h1>Products</h1>
 
 @foreach (var product in Model)
 {
+    var inventoryItem = inventory.FirstOrDefault(i =>
+        i.StoreID == 1 &&
+        i.ProductID == product.ProductID);
+
     <div>
         <h2>@product.ProductName</h2>
         <p>Category: @product.ProductCategory</p>
         <p>Price: @product.ProductPrice.ToString("C")</p>
+        <p>Available in Houston: @(inventoryItem?.Quantity ?? 0)</p>
+
+        <a asp-controller="Cart"
+           asp-action="AddToCart"
+           asp-route-productID="@product.ProductID">
+            Add to Cart
+        </a>
     </div>
 
     <hr />

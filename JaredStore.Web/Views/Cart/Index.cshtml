@@ -1,11 +1,37 @@
 ﻿@model List<Jared_s_Graduation_Project.CartItem>
+@using Jared_s_Graduation_Project
 @{
     ViewData["Title"] = "Cart";
+    var products = (List<Product>)ViewBag.Products;
 }
 
 <h1>Shopping Cart</h1>
 
+@{
+    decimal grandTotal = 0;
+}
+
 @foreach (var item in Model)
 {
-    <p>Product ID: @item.ProductID | Quantity: @item.Quantity</p>
+    var product = products.FirstOrDefault(p => p.ProductID == item.ProductID);
+    grandTotal += product.ProductPrice * item.Quantity;
+
+    <p>
+        @product.ProductName |
+        Quantity: @item.Quantity |
+        Price: @product.ProductPrice.ToString("C") |
+        Total: @((product.ProductPrice * item.Quantity).ToString("C"))
+    </p>
+
+    <a asp-controller="Cart"
+       asp-action="RemoveFromCart"
+       asp-route-productID="@item.ProductID">
+        Remove
+    </a>
 }
+
+<h3>Order Total: @grandTotal.ToString("C")</h3>
+<a asp-controller="Cart"
+   asp-action="Checkout">
+    Checkout
+</a>

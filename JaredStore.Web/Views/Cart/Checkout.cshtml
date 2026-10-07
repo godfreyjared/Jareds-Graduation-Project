@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Order Complete";
+}
+
+<h1>Order Complete!</h1>
+
+<p>Thank you for your purchase.</p>
+
+<h3>Order Total: @ViewBag.OrderTotal.ToString("C")</h3>
+
+<p>Your order has been successfully processed.</p>
+
+<a asp-controller="Products" asp-action="Index">
+    Continue Shopping
+</a>
