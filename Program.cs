@@ -142,7 +142,7 @@ if (createdProduct != null)
     DeleteProduct(products, 9);
 
 }
-// Method Center (Methods may also include messages).
+// Method Center
 
 static void AddToCart(
     List<CartItem> cart,

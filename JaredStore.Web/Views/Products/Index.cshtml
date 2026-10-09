@@ -2,10 +2,26 @@
 @using Jared_s_Graduation_Project
 
 @{
+    ViewData["Title"] = "Products";
     var inventory = (List<Inventory>)ViewBag.Inventory;
 }
 
 <h1>Products</h1>
+
+@if (TempData["Message"] != null)
+{
+    <p style="color: red; font-weight: bold;">
+        @TempData["Message"]
+    </p>
+}
+
+<a asp-controller="Products"
+   asp-action="Create"
+   class="btn btn-primary">
+    Create New Product
+</a>
+
+<hr />
 
 @foreach (var product in Model)
 {
@@ -15,16 +31,63 @@
 
     <div>
         <h2>@product.ProductName</h2>
+
         <p>Category: @product.ProductCategory</p>
+
         <p>Price: @product.ProductPrice.ToString("C")</p>
-        <p>Available in Houston: @(inventoryItem?.Quantity ?? 0)</p>
+
+        <p>
+            Available in Houston:
+            <span id="stock-@product.ProductID">
+                @(inventoryItem?.Quantity ?? 0)
+            </span>
+        </p>
 
         <a asp-controller="Cart"
            asp-action="AddToCart"
            asp-route-productID="@product.ProductID">
             Add to Cart
         </a>
+
+        <a asp-controller="Products"
+           asp-action="Edit"
+           asp-route-id="@product.ProductID"
+           class="btn btn-secondary">
+            Edit Product
+        </a>
+
+        <a asp-controller="Products"
+           asp-action="Delete"
+           asp-route-id="@product.ProductID"
+           class="btn btn-danger">
+            Delete Product
+        </a>
     </div>
 
     <hr />
 }
+
+<script>
+    async function updateStock() {
+        try {
+            const response = await fetch('/Products/GetStock');
+
+            if (!response.ok) return;
+
+            const stock = await response.json();
+
+            stock.forEach(item => {
+                const element =
+                    document.getElementById(`stock-${item.productID}`);
+
+                if (element) {
+                    element.textContent = item.quantity;
+                }
+            });
+        } catch (error) {
+            console.error("Unable to update stock:", error);
+        }
+    }
+
+    setInterval(updateStock, 10000);
+</script>

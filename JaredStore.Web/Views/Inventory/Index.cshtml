@@ -10,31 +10,43 @@
 
 @if (TempData["Message"] != null)
 {
-    <p>@TempData["Message"]</p>
+    <p style="color: red; font-weight: bold;">
+        @TempData["Message"]
+    </p>
 }
 
 <p>Select a store to view its available inventory.</p>
 
-<a asp-controller="Inventory" asp-action="Index" asp-route-storeID="1">Houston</a>
+<a asp-controller="Inventory"
+   asp-action="Index"
+   asp-route-storeID="1">Houston</a>
 <br />
 
-<a asp-controller="Inventory" asp-action="Index" asp-route-storeID="2">Dallas</a>
+<a asp-controller="Inventory"
+   asp-action="Index"
+   asp-route-storeID="2">Dallas</a>
 <br />
 
-<a asp-controller="Inventory" asp-action="Index" asp-route-storeID="3">San Antonio</a>
+<a asp-controller="Inventory"
+   asp-action="Index"
+   asp-route-storeID="3">San Antonio</a>
 
 <p>Selected Store ID: @ViewBag.StoreID</p>
 
 @foreach (var item in Model)
 {
-    var product = products.FirstOrDefault(p => p.ProductID == item.ProductID);
+    var product = products.FirstOrDefault(p =>
+        p.ProductID == item.ProductID);
 
     if (product != null)
     {
         <p>
             @product.ProductName |
             Price: @product.ProductPrice.ToString("C") |
-            Quantity: @item.Quantity
+            Quantity:
+            <span id="quantity-@item.ProductID">
+                @item.Quantity
+            </span>
         </p>
     }
 }
@@ -47,33 +59,107 @@
       asp-action="MoveInventory"
       method="post">
 
-    <label>From Store:</label>
-    <select name="fromStoreID">
-        <option value="1">Houston</option>
-        <option value="2">Dallas</option>
-        <option value="3">San Antonio</option>
-    </select>
+    @Html.AntiForgeryToken()
 
-    <label>To Store:</label>
-    <select name="toStoreID">
-        <option value="1">Houston</option>
-        <option value="2">Dallas</option>
-        <option value="3">San Antonio</option>
-    </select>
+    <div>
+        <label>From Store:</label>
+        <select name="fromStoreID">
+            <option value="1">Houston</option>
+            <option value="2">Dallas</option>
+            <option value="3">San Antonio</option>
+        </select>
+    </div>
 
-    <label>Product:</label>
-    <select name="productID">
-        @foreach (var product in products)
-        {
-            <option value="@product.ProductID">
-                @product.ProductName
-            </option>
-        }
-    </select>
+    <div>
+        <label>To Store:</label>
+        <select name="toStoreID">
+            <option value="1">Houston</option>
+            <option value="2">Dallas</option>
+            <option value="3">San Antonio</option>
+        </select>
+    </div>
 
-    <label>Quantity:</label>
-    <input type="number" name="quantity" min="1" required />
+    <div>
+        <label>Product:</label>
+        <select name="productID">
+            @foreach (var product in products)
+            {
+                <option value="@product.ProductID">
+                    @product.ProductName
+                </option>
+            }
+        </select>
+    </div>
 
-    <button type="submit">Move Inventory</button>
+    <div>
+        <label>Quantity:</label>
+        <input type="number"
+               name="quantity"
+               min="1"
+               required />
+    </div>
+
+    <hr />
+
+    <h3>Employee Authorization</h3>
+
+    <div>
+        <label>Employee Username:</label>
+        <input type="text"
+               name="username"
+               autocomplete="username"
+               required />
+    </div>
+
+    <div>
+        <label>Employee Password:</label>
+        <input type="password"
+               name="password"
+               autocomplete="off"
+               required />
+    </div>
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">
+        Move Inventory
+    </button>
 
 </form>
+
+@if (ViewBag.StoreID != null)
+{
+    <script>
+        async function refreshInventory() {
+            try {
+                const response = await fetch(
+                    '@Url.Action("GetStock", "Inventory", new { storeID = ViewBag.StoreID })',
+                    { cache: "no-store" }
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const inventory = await response.json();
+
+                inventory.forEach(item => {
+                    const quantityElement =
+                        document.getElementById(
+                            `quantity-${item.productID}`
+                        );
+
+                    if (quantityElement) {
+                        quantityElement.textContent = item.quantity;
+                    }
+                });
+            }
+            catch (error) {
+                console.error("Inventory refresh failed:", error);
+            }
+        }
+
+        // Update quantities every 10 seconds without reloading
+        setInterval(refreshInventory, 10000);
+    </script>
+}

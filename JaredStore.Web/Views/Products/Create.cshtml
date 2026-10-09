@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "Create Product";
+}
+
+<h1>Create Product</h1>
+
+@if (ViewBag.Message != null)
+{
+    <p style="color: red; font-weight: bold;">
+        @ViewBag.Message
+    </p>
+}
+
+<form asp-controller="Products"
+      asp-action="Create"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div>
+        <label>Product Name:</label>
+        <input type="text"
+               name="productName"
+               required />
+    </div>
+
+    <div>
+        <label>Category:</label>
+        <input type="text"
+               name="productCategory"
+               required />
+    </div>
+
+    <div>
+        <label>Price:</label>
+        <input type="number"
+               name="productPrice"
+               min="0.01"
+               step="0.01"
+               required />
+    </div>
+
+    <hr />
+
+    <h3>Employee Authorization</h3>
+
+    <div>
+        <label>Employee Username:</label>
+        <input type="text"
+               name="username"
+               autocomplete="username"
+               required />
+    </div>
+
+    <div>
+        <label>Employee Password:</label>
+        <input type="password"
+               name="password"
+               autocomplete="off"
+               required />
+    </div>
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">
+        Create Product
+    </button>
+</form>
+
+<p>
+    <a asp-controller="Products"
+       asp-action="Index">
+        Back to Products
+    </a>
+</p>
