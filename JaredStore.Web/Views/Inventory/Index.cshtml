@@ -3,143 +3,313 @@
 
 @{
     ViewData["Title"] = "Inventory";
+
     var products = (List<Product>)ViewBag.Products;
-}
 
-<h1>Store Inventory</h1>
+    int? selectedStoreID = ViewBag.StoreID == null
+        ? null
+        : (int)ViewBag.StoreID;
 
-@if (TempData["Message"] != null)
-{
-    <p style="color: red; font-weight: bold;">
-        @TempData["Message"]
-    </p>
-}
-
-<p>Select a store to view its available inventory.</p>
-
-<a asp-controller="Inventory"
-   asp-action="Index"
-   asp-route-storeID="1">Houston</a>
-<br />
-
-<a asp-controller="Inventory"
-   asp-action="Index"
-   asp-route-storeID="2">Dallas</a>
-<br />
-
-<a asp-controller="Inventory"
-   asp-action="Index"
-   asp-route-storeID="3">San Antonio</a>
-
-<p>Selected Store ID: @ViewBag.StoreID</p>
-
-@foreach (var item in Model)
-{
-    var product = products.FirstOrDefault(p =>
-        p.ProductID == item.ProductID);
-
-    if (product != null)
+    string storeName = selectedStoreID switch
     {
-        <p>
-            @product.ProductName |
-            Price: @product.ProductPrice.ToString("C") |
-            Quantity:
-            <span id="quantity-@item.ProductID">
-                @item.Quantity
-            </span>
-        </p>
-    }
+        1 => "Houston",
+        2 => "Dallas",
+        3 => "San Antonio",
+        _ => "Select a Location"
+    };
 }
 
-<hr />
+<section class="ccs-inventory-page">
 
-<h3>Move Inventory Between Stores</h3>
-
-<form asp-controller="Inventory"
-      asp-action="MoveInventory"
-      method="post">
-
-    @Html.AntiForgeryToken()
-
-    <div>
-        <label>From Store:</label>
-        <select name="fromStoreID">
-            <option value="1">Houston</option>
-            <option value="2">Dallas</option>
-            <option value="3">San Antonio</option>
-        </select>
+    <div class="ccs-page-heading">
+        <span class="ccs-eyebrow">CONTINENTAL OPERATIONS</span>
+        <h1>Store Inventory</h1>
+        <p>
+            View live inventory across our three Texas locations
+            and manage stock transfers.
+        </p>
     </div>
 
-    <div>
-        <label>To Store:</label>
-        <select name="toStoreID">
-            <option value="1">Houston</option>
-            <option value="2">Dallas</option>
-            <option value="3">San Antonio</option>
-        </select>
-    </div>
+    @if (TempData["Message"] != null)
+    {
+        <div class="ccs-notice" role="status">
+            @TempData["Message"]
+        </div>
+    }
 
-    <div>
-        <label>Product:</label>
-        <select name="productID">
-            @foreach (var product in products)
-            {
-                <option value="@product.ProductID">
-                    @product.ProductName
-                </option>
-            }
-        </select>
-    </div>
+    <section class="ccs-dashboard-section">
+        <div class="ccs-section-heading">
+            <h2>Select a Location</h2>
+            <p>Choose a store to view its available stock.</p>
+        </div>
 
-    <div>
-        <label>Quantity:</label>
-        <input type="number"
-               name="quantity"
-               min="1"
-               required />
-    </div>
+        <div class="ccs-store-grid">
 
-    <hr />
+            <a asp-controller="Inventory"
+               asp-action="Index"
+               asp-route-storeID="1"
+               class="ccs-store-card @(selectedStoreID == 1 ? "is-active" : "")"
+               aria-current="@(selectedStoreID == 1 ? "page" : null)">
 
-    <h3>Employee Authorization</h3>
+                <span class="ccs-store-icon">01</span>
+                <span class="ccs-store-name">Houston</span>
+                <span class="ccs-store-caption">Texas Location</span>
+                <span class="ccs-store-action">
+                    View Inventory &rarr;
+                </span>
+            </a>
 
-    <div>
-        <label>Employee Username:</label>
-        <input type="text"
-               name="username"
-               autocomplete="username"
-               required />
-    </div>
+            <a asp-controller="Inventory"
+               asp-action="Index"
+               asp-route-storeID="2"
+               class="ccs-store-card @(selectedStoreID == 2 ? "is-active" : "")"
+               aria-current="@(selectedStoreID == 2 ? "page" : null)">
 
-    <div>
-        <label>Employee Password:</label>
-        <input type="password"
-               name="password"
-               autocomplete="off"
-               required />
-    </div>
+                <span class="ccs-store-icon">02</span>
+                <span class="ccs-store-name">Dallas</span>
+                <span class="ccs-store-caption">Texas Location</span>
+                <span class="ccs-store-action">
+                    View Inventory &rarr;
+                </span>
+            </a>
 
-    <br />
+            <a asp-controller="Inventory"
+               asp-action="Index"
+               asp-route-storeID="3"
+               class="ccs-store-card @(selectedStoreID == 3 ? "is-active" : "")"
+               aria-current="@(selectedStoreID == 3 ? "page" : null)">
 
-    <button type="submit" class="btn btn-primary">
-        Move Inventory
-    </button>
+                <span class="ccs-store-icon">03</span>
+                <span class="ccs-store-name">San Antonio</span>
+                <span class="ccs-store-caption">Texas Location</span>
+                <span class="ccs-store-action">
+                    View Inventory &rarr;
+                </span>
+            </a>
 
-</form>
+        </div>
+    </section>
 
-@if (ViewBag.StoreID != null)
+    @if (selectedStoreID != null)
+    {
+        <section class="ccs-dashboard-section ccs-inventory-panel">
+
+            <div class="ccs-section-heading">
+                <span class="ccs-eyebrow">LIVE STOCK MONITOR</span>
+                <h2>@storeName Inventory</h2>
+                <p>
+                    Available quantities refresh automatically
+                    every 10 seconds.
+                </p>
+            </div>
+
+            <div class="ccs-table-wrapper">
+                <table class="ccs-inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Unit Price</th>
+                            <th>Available Stock</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var product = products.FirstOrDefault(p =>
+                            p.ProductID == item.ProductID);
+
+                            if (product != null)
+                            {
+                                <tr>
+                                    <td class="ccs-product-name">
+                                        @product.ProductName
+                                    </td>
+
+                                    <td>@product.ProductCategory</td>
+
+                                    <td>
+                                        @product.ProductPrice.ToString("C")
+                                    </td>
+
+                                    <td>
+                                        <span class="ccs-stock-badge"
+                                              id="stock-badge-@item.ProductID">
+                                            <span id="quantity-@item.ProductID">
+                                                @item.Quantity
+                                            </span>
+                                            available
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+    }
+
+    <section class="ccs-dashboard-section ccs-transfer-panel">
+
+        <div class="ccs-section-heading">
+            <span class="ccs-eyebrow">AUTHORIZED OPERATIONS</span>
+            <h2>Transfer Inventory</h2>
+            <p>
+                Move available products between store locations.
+                Employee credentials are required.
+            </p>
+        </div>
+
+        <form asp-controller="Inventory"
+              asp-action="MoveInventory"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div class="ccs-form-grid">
+
+                <div class="ccs-field">
+                    <label for="fromStoreID">From Store</label>
+
+                    <select id="fromStoreID"
+                            name="fromStoreID"
+                            class="form-select"
+                            required>
+
+                        <option value="1" selected="@(selectedStoreID == 1)">
+                            Houston
+                        </option>
+
+                        <option value="2" selected="@(selectedStoreID == 2)">
+                            Dallas
+                        </option>
+
+                        <option value="3" selected="@(selectedStoreID == 3)">
+                            San Antonio
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="ccs-field">
+                    <label for="toStoreID">To Store</label>
+
+                    <select id="toStoreID"
+                            name="toStoreID"
+                            class="form-select"
+                            required>
+
+                        <option value="" selected disabled>
+                            Select Destination
+                        </option>
+
+                        <option value="1">Houston</option>
+                        <option value="2">Dallas</option>
+                        <option value="3">San Antonio</option>
+
+                    </select>
+                </div>
+
+                <div class="ccs-field">
+                    <label for="productID">Product</label>
+
+                    <select id="productID"
+                            name="productID"
+                            class="form-select"
+                            required>
+
+                        @foreach (var product in products)
+                        {
+                            <option value="@product.ProductID">
+                                @product.ProductName
+                            </option>
+                        }
+
+                    </select>
+                </div>
+
+                <div class="ccs-field">
+                    <label for="quantity">Transfer Quantity</label>
+
+                    <input id="quantity"
+                           type="number"
+                           name="quantity"
+                           min="1"
+                           class="form-control"
+                           placeholder="Enter quantity"
+                           required />
+                </div>
+
+            </div>
+
+            <div class="ccs-auth-panel">
+
+                <div class="ccs-section-heading">
+                    <span class="ccs-eyebrow">SECURE ACTION</span>
+                    <h3>Employee Authorization</h3>
+                    <p>
+                        Enter your employee credentials
+                        to authorize this transfer.
+                    </p>
+                </div>
+
+                <div class="ccs-form-grid">
+
+                    <div class="ccs-field">
+                        <label for="username">
+                            Employee Username
+                        </label>
+
+                        <input id="username"
+                               type="text"
+                               name="username"
+                               class="form-control"
+                               autocomplete="username"
+                               required />
+                    </div>
+
+                    <div class="ccs-field">
+                        <label for="password">
+                            Employee Password
+                        </label>
+
+                        <input id="password"
+                               type="password"
+                               name="password"
+                               class="form-control"
+                               autocomplete="off"
+                               required />
+                    </div>
+
+                </div>
+
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary btn-lg ccs-transfer-button">
+                Confirm Inventory Transfer &rarr;
+            </button>
+
+        </form>
+
+    </section>
+
+</section>
+
+@if (selectedStoreID != null)
 {
     <script>
         async function refreshInventory() {
             try {
                 const response = await fetch(
-                    '@Url.Action("GetStock", "Inventory", new { storeID = ViewBag.StoreID })',
+                    '@Url.Action("GetStock", "Inventory", new { storeID = selectedStoreID })',
                     { cache: "no-store" }
                 );
 
-                if (!response.ok) {
-                    return;
-                }
+                if (!response.ok) return;
 
                 const inventory = await response.json();
 
@@ -149,8 +319,20 @@
                             `quantity-${item.productID}`
                         );
 
+                    const badgeElement =
+                        document.getElementById(
+                            `stock-badge-${item.productID}`
+                        );
+
                     if (quantityElement) {
                         quantityElement.textContent = item.quantity;
+                    }
+
+                    if (badgeElement) {
+                        badgeElement.classList.toggle(
+                            "is-out-of-stock",
+                            item.quantity <= 0
+                        );
                     }
                 });
             }
@@ -159,7 +341,7 @@
             }
         }
 
-        // Update quantities every 10 seconds without reloading
+        refreshInventory();
         setInterval(refreshInventory, 10000);
     </script>
 }

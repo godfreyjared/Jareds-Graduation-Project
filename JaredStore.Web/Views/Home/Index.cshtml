@@ -1,8 +1,46 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Continental Computing Solutions</h1>
-    <p>Computer parts inventory and store management system.</p>
-</div>
+<section class="ccs-hero">
+
+    <div class="ccs-hero-glow"></div>
+
+    <div class="ccs-logo-showcase">
+        <img src="~/images/continental-logo.png"
+             alt="Continental Computing Solutions"
+             class="ccs-hero-logo" />
+    </div>
+
+    <p class="ccs-hero-tagline">
+        NEXT-GENERATION COMPUTING STARTS HERE
+    </p>
+
+    <p class="ccs-hero-description">
+        Premium PC components. Real-time inventory.
+        Three Texas locations.
+    </p>
+
+    <div class="ccs-hero-actions">
+        <a asp-controller="Products"
+           asp-action="Index"
+           class="btn btn-primary btn-lg">
+            Explore Products
+        </a>
+
+        <a asp-controller="Inventory"
+           asp-action="Index"
+           class="btn btn-secondary btn-lg">
+            View Inventory
+        </a>
+    </div>
+
+    <div class="ccs-hero-locations">
+        <span>HOUSTON</span>
+        <span class="ccs-location-dot"></span>
+        <span>DALLAS</span>
+        <span class="ccs-location-dot"></span>
+        <span>SAN ANTONIO</span>
+    </div>
+
+</section>

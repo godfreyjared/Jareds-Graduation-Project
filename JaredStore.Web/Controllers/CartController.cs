@@ -1,28 +1,72 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using Jared_s_Graduation_Project;
-using JaredStore.Web.Models;
 
 namespace JaredStore.Web.Controllers
 {
     public class CartController : Controller
     {
-        private static List<CartItem> cart = new List<CartItem>();
+        // One shared cart and selected store for this demo
+        private static readonly List<CartItem> cart = new();
+
+        private static int? selectedStoreID = null;
+
+        // Allow other controllers to see the selected store
+        public static int? SelectedStoreID => selectedStoreID;
+
+        public static bool CartHasItems => cart.Count > 0;
+
+        // Select a store before shopping
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SelectStore(int storeID)
+        {
+            if (storeID < 1 || storeID > 3)
+            {
+                TempData["Message"] = "Invalid store selection.";
+                return RedirectToAction("Index", "Products");
+            }
+
+            if (cart.Count > 0 && selectedStoreID != storeID)
+            {
+                TempData["Message"] =
+                    "Please empty your cart or complete checkout before changing stores.";
+
+                return RedirectToAction("Index", "Products");
+            }
+
+            selectedStoreID = storeID;
+
+            return RedirectToAction("Index", "Products");
+        }
 
         public IActionResult Index()
         {
             ViewBag.Products = StoreData.Products;
+            ViewBag.StoreID = selectedStoreID;
+
             return View(cart);
         }
 
+        // Reserve one item from the selected store
         public IActionResult AddToCart(int productID)
         {
+            if (selectedStoreID == null)
+            {
+                TempData["Message"] =
+                    "Please select a store before shopping.";
+
+                return RedirectToAction("Index", "Products");
+            }
+
             var inventoryItem = StoreData.Inventory.FirstOrDefault(item =>
-                item.StoreID == 1 &&
+                item.StoreID == selectedStoreID.Value &&
                 item.ProductID == productID);
 
             if (inventoryItem == null || inventoryItem.Quantity <= 0)
             {
                 ViewBag.Products = StoreData.Products;
+                ViewBag.StoreID = selectedStoreID;
                 ViewBag.Message = "Not enough inventory available.";
 
                 return View("Index", cart);
@@ -44,22 +88,29 @@ namespace JaredStore.Web.Controllers
                 });
             }
 
-            // Move one item from available inventory to reserved inventory
+            // Reserve inventory at the selected store
             inventoryItem.Quantity--;
             inventoryItem.ReservedQuantity++;
 
             ViewBag.Products = StoreData.Products;
+            ViewBag.StoreID = selectedStoreID;
 
             return View("Index", cart);
         }
 
+        // Return one item to its original store
         public IActionResult RemoveFromCart(int productID)
         {
+            if (selectedStoreID == null)
+            {
+                return RedirectToAction("Index");
+            }
+
             var existingItem = cart.FirstOrDefault(item =>
                 item.ProductID == productID);
 
             var inventoryItem = StoreData.Inventory.FirstOrDefault(item =>
-                item.StoreID == 1 &&
+                item.StoreID == selectedStoreID.Value &&
                 item.ProductID == productID);
 
             if (existingItem != null)
@@ -73,8 +124,8 @@ namespace JaredStore.Web.Controllers
                     cart.Remove(existingItem);
                 }
 
-                // Return one reserved item back to available inventory
-                if (inventoryItem != null && inventoryItem.ReservedQuantity > 0)
+                if (inventoryItem != null &&
+                    inventoryItem.ReservedQuantity > 0)
                 {
                     inventoryItem.Quantity++;
                     inventoryItem.ReservedQuantity--;
@@ -84,8 +135,14 @@ namespace JaredStore.Web.Controllers
             return RedirectToAction("Index");
         }
 
+        // Complete purchase at the selected store
         public IActionResult Checkout()
         {
+            if (selectedStoreID == null || cart.Count == 0)
+            {
+                return RedirectToAction("Index");
+            }
+
             decimal orderTotal = 0;
 
             foreach (var cartItem in cart)
@@ -95,22 +152,25 @@ namespace JaredStore.Web.Controllers
 
                 if (product != null)
                 {
-                    orderTotal += product.ProductPrice * cartItem.Quantity;
+                    orderTotal +=
+                        product.ProductPrice * cartItem.Quantity;
                 }
 
                 var inventoryItem = StoreData.Inventory.FirstOrDefault(item =>
-                    item.StoreID == 1 &&
+                    item.StoreID == selectedStoreID.Value &&
                     item.ProductID == cartItem.ProductID);
 
                 if (inventoryItem != null)
                 {
-                    // Items were already removed from available inventory
-                    // when they were added to the cart.
+                    // Available stock was reduced when reserved
                     inventoryItem.ReservedQuantity -= cartItem.Quantity;
                 }
             }
 
             cart.Clear();
+
+            // Allow a new store selection after checkout
+            selectedStoreID = null;
 
             ViewBag.OrderTotal = orderTotal;
 

@@ -9,15 +9,25 @@ namespace JaredStore.Web.Controllers
         public IActionResult Index()
         {
             ViewBag.Inventory = StoreData.Inventory;
+
+            // Store selected through the CartController
+            ViewBag.StoreID = CartController.SelectedStoreID;
+            ViewBag.CartHasItems = CartController.CartHasItems;
+
             return View(StoreData.Products);
         }
 
-
+        // Live stock updates for the selected store
         [HttpGet]
-        public IActionResult GetStock()
+        public IActionResult GetStock(int storeID)
         {
+            if (storeID < 1 || storeID > 3)
+            {
+                return BadRequest("Invalid store selection.");
+            }
+
             var stock = StoreData.Inventory
-                .Where(i => i.StoreID == 1)
+                .Where(i => i.StoreID == storeID)
                 .Select(i => new
                 {
                     productID = i.ProductID,
@@ -71,11 +81,13 @@ namespace JaredStore.Web.Controllers
 
             StoreData.Products.Add(newProduct);
 
+            // Create inventory records for all three stores
             foreach (int storeID in new[] { 1, 2, 3 })
             {
                 StoreData.Inventory.Add(new Inventory
                 {
-                    InventoryID = $"{(char)('A' + storeID - 1)}{newProductID}",
+                    InventoryID =
+                        $"{(char)('A' + storeID - 1)}{newProductID}",
                     StoreID = storeID,
                     ProductID = newProductID,
                     Quantity = 0,
@@ -96,7 +108,9 @@ namespace JaredStore.Web.Controllers
                 p.ProductID == id);
 
             if (product == null)
+            {
                 return NotFound();
+            }
 
             return View(product);
         }
@@ -115,7 +129,9 @@ namespace JaredStore.Web.Controllers
                 p.ProductID == productID);
 
             if (product == null)
+            {
                 return NotFound();
+            }
 
             if (!EmployeeAccess.IsValid(username, password))
             {
@@ -148,7 +164,9 @@ namespace JaredStore.Web.Controllers
                 p.ProductID == id);
 
             if (product == null)
+            {
                 return NotFound();
+            }
 
             return View(product);
         }
@@ -165,11 +183,15 @@ namespace JaredStore.Web.Controllers
                 p.ProductID == productID);
 
             if (product == null)
+            {
                 return NotFound();
+            }
 
             if (!EmployeeAccess.IsValid(username, password))
             {
-                ViewBag.Message = "Invalid employee username or password.";
+                ViewBag.Message =
+                    "Invalid employee username or password.";
+
                 return View("Delete", product);
             }
 

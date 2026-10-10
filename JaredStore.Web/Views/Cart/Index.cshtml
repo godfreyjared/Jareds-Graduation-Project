@@ -2,47 +2,190 @@
 @using Jared_s_Graduation_Project
 
 @{
-    ViewData["Title"] = "Cart";
+    ViewData["Title"] = "Shopping Cart";
+
     var products = (List<Product>)ViewBag.Products;
-}
 
-<h1>Shopping Cart</h1>
+    int? selectedStoreID = ViewBag.StoreID == null
+        ? null
+        : (int)ViewBag.StoreID;
 
-@if (ViewBag.Message != null)
-{
-    <p>@ViewBag.Message</p>
-}
-
-@{
-    decimal grandTotal = 0;
-}
-
-@foreach (var item in Model)
-{
-    var product = products.FirstOrDefault(p => p.ProductID == item.ProductID);
-
-    if (product != null)
+    string storeName = selectedStoreID switch
     {
-        grandTotal += product.ProductPrice * item.Quantity;
+        1 => "Houston",
+        2 => "Dallas",
+        3 => "San Antonio",
+        _ => "No Store Selected"
+    };
 
-        <p>
-            @product.ProductName |
-            Quantity: @item.Quantity |
-            Price: @product.ProductPrice.ToString("C") |
-            Total: @((product.ProductPrice * item.Quantity).ToString("C"))
-        </p>
+    decimal grandTotal = 0;
 
-        <a asp-controller="Cart"
-           asp-action="RemoveFromCart"
-           asp-route-productID="@item.ProductID">
-            Remove
-        </a>
+    foreach (var item in Model)
+    {
+        var product = products.FirstOrDefault(p =>
+            p.ProductID == item.ProductID);
+
+        if (product != null)
+        {
+            grandTotal += product.ProductPrice * item.Quantity;
+        }
     }
 }
 
-<h3>Order Total: @grandTotal.ToString("C")</h3>
+<section class="ccs-cart-page">
 
-<a asp-controller="Cart"
-   asp-action="Checkout">
-    Checkout
-</a>
+    <div class="ccs-page-heading">
+        <span class="ccs-eyebrow">CONTINENTAL CHECKOUT</span>
+        <h1>Your Shopping Cart</h1>
+        <p>
+            Review your selected components
+            before completing your order.
+        </p>
+    </div>
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="ccs-notice" role="alert">
+            @ViewBag.Message
+        </div>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <div class="ccs-cart-empty">
+
+            <div class="ccs-cart-empty-icon">
+                &#128722;
+            </div>
+
+            <h2>Your cart is empty</h2>
+
+            <p>
+                Your next PC build starts with the right components.
+                Explore our catalog to get started.
+            </p>
+
+            <a asp-controller="Products"
+               asp-action="Index"
+               class="btn btn-primary btn-lg">
+                Explore Products &rarr;
+            </a>
+
+        </div>
+    }
+    else
+    {
+        <div class="ccs-cart-layout">
+
+            <div class="ccs-cart-items">
+
+                <div class="ccs-cart-panel-heading">
+                    <h2>Order Items</h2>
+
+                    <span class="ccs-cart-store">
+                        @storeName Location
+                    </span>
+                </div>
+
+                @foreach (var item in Model)
+                {
+                    var product = products.FirstOrDefault(p =>
+                    p.ProductID == item.ProductID);
+
+                    if (product != null)
+                    {
+                        <div class="ccs-cart-item">
+
+                            <div class="ccs-cart-item-icon">
+                                PC
+                            </div>
+
+                            <div class="ccs-cart-item-details">
+
+                                <span class="ccs-product-category">
+                                    @product.ProductCategory
+                                </span>
+
+                                <h3>@product.ProductName</h3>
+
+                                <p>
+                                    Unit Price:
+                                    @product.ProductPrice.ToString("C")
+                                </p>
+
+                                <div class="ccs-cart-quantity">
+                                    <span>
+                                        Quantity: <strong>@item.Quantity</strong>
+                                    </span>
+
+                                    <a asp-controller="Cart"
+                                       asp-action="RemoveFromCart"
+                                       asp-route-productID="@item.ProductID"
+                                       class="ccs-remove-button">
+                                        &minus; Remove One
+                                    </a>
+                                </div>
+
+                            </div>
+
+                            <div class="ccs-cart-item-total">
+                                @((product.ProductPrice * item.Quantity).ToString("C"))
+                            </div>
+
+                        </div>
+                    }
+                }
+
+                <a asp-controller="Products"
+                   asp-action="Index"
+                   class="ccs-continue-shopping">
+                    &larr; Continue Shopping
+                </a>
+
+            </div>
+
+            <aside class="ccs-order-summary">
+
+                <span class="ccs-eyebrow">ORDER OVERVIEW</span>
+
+                <h2>Order Summary</h2>
+
+                <div class="ccs-summary-row">
+                    <span>Items</span>
+                    <strong>@Model.Sum(item => item.Quantity)</strong>
+                </div>
+
+                <div class="ccs-summary-row">
+                    <span>Store</span>
+                    <strong>@storeName</strong>
+                </div>
+
+                <div class="ccs-summary-row">
+                    <span>Subtotal</span>
+                    <strong>@grandTotal.ToString("C")</strong>
+                </div>
+
+                <hr />
+
+                <div class="ccs-summary-total">
+                    <span>Order Total</span>
+                    <strong>@grandTotal.ToString("C")</strong>
+                </div>
+
+                <a asp-controller="Cart"
+                   asp-action="Checkout"
+                   class="btn btn-primary btn-lg ccs-checkout-button">
+                    Complete Checkout &rarr;
+                </a>
+
+                <p class="ccs-checkout-note">
+                    Reserved inventory will be finalized
+                    when you complete checkout.
+                </p>
+
+            </aside>
+
+        </div>
+    }
+
+</section>

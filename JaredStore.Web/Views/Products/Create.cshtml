@@ -2,74 +2,145 @@
     ViewData["Title"] = "Create Product";
 }
 
-<h1>Create Product</h1>
+<section class="ccs-admin-page">
 
-@if (ViewBag.Message != null)
-{
-    <p style="color: red; font-weight: bold;">
-        @ViewBag.Message
-    </p>
-}
-
-<form asp-controller="Products"
-      asp-action="Create"
-      method="post">
-
-    @Html.AntiForgeryToken()
-
-    <div>
-        <label>Product Name:</label>
-        <input type="text"
-               name="productName"
-               required />
+    <div class="ccs-page-heading">
+        <span class="ccs-eyebrow">CONTINENTAL OPERATIONS</span>
+        <h1>Create New Product</h1>
+        <p>
+            Add a new component to the Continental
+            Computing Solutions product catalog.
+        </p>
     </div>
 
-    <div>
-        <label>Category:</label>
-        <input type="text"
-               name="productCategory"
-               required />
-    </div>
+    @if (ViewBag.Message != null)
+    {
+        <div class="ccs-notice" role="alert">
+            @ViewBag.Message
+        </div>
+    }
 
-    <div>
-        <label>Price:</label>
-        <input type="number"
-               name="productPrice"
-               min="0.01"
-               step="0.01"
-               required />
-    </div>
+    <form asp-controller="Products"
+          asp-action="Create"
+          method="post">
 
-    <hr />
+        @Html.AntiForgeryToken()
 
-    <h3>Employee Authorization</h3>
+        <section class="ccs-admin-panel">
 
-    <div>
-        <label>Employee Username:</label>
-        <input type="text"
-               name="username"
-               autocomplete="username"
-               required />
-    </div>
+            <div class="ccs-admin-panel-heading">
+                <span class="ccs-admin-step">01</span>
 
-    <div>
-        <label>Employee Password:</label>
-        <input type="password"
-               name="password"
-               autocomplete="off"
-               required />
-    </div>
+                <div>
+                    <span class="ccs-eyebrow">PRODUCT MANAGEMENT</span>
+                    <h2>Product Information</h2>
+                    <p>
+                        Enter the details of the component
+                        you want to add to the catalog.
+                    </p>
+                </div>
+            </div>
 
-    <br />
+            <div class="ccs-admin-fields">
 
-    <button type="submit" class="btn btn-primary">
-        Create Product
-    </button>
-</form>
+                <div class="ccs-field ccs-admin-full-width">
+                    <label for="productName">Product Name</label>
 
-<p>
-    <a asp-controller="Products"
-       asp-action="Index">
-        Back to Products
-    </a>
-</p>
+                    <input type="text"
+                           id="productName"
+                           name="productName"
+                           class="form-control"
+                           placeholder="e.g. AMD Ryzen 7 5700X"
+                           maxlength="150"
+                           required />
+                </div>
+
+                <div class="ccs-field">
+                    <label for="productCategory">Category</label>
+
+                    <input type="text"
+                           id="productCategory"
+                           name="productCategory"
+                           class="form-control"
+                           placeholder="e.g. CPU, GPU, RAM"
+                           required />
+                </div>
+
+                <div class="ccs-field">
+                    <label for="productPrice">Unit Price ($)</label>
+
+                    <input type="number"
+                           id="productPrice"
+                           name="productPrice"
+                           class="form-control"
+                           placeholder="0.00"
+                           min="0.01"
+                           step="0.01"
+                           required />
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="ccs-admin-panel">
+
+            <div class="ccs-admin-panel-heading">
+                <span class="ccs-admin-step">02</span>
+
+                <div>
+                    <span class="ccs-eyebrow">AUTHORIZED PERSONNEL</span>
+                    <h2>Employee Authorization</h2>
+                    <p>
+                        Verify your employee credentials
+                        to create this product.
+                    </p>
+                </div>
+            </div>
+
+            <div class="ccs-admin-fields">
+
+                <div class="ccs-field">
+                    <label for="username">Employee Username</label>
+
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           class="form-control"
+                           autocomplete="username"
+                           required />
+                </div>
+
+                <div class="ccs-field">
+                    <label for="password">Employee Password</label>
+
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           class="form-control"
+                           autocomplete="off"
+                           required />
+                </div>
+
+            </div>
+
+        </section>
+
+        <div class="ccs-admin-actions">
+
+            <a asp-controller="Products"
+               asp-action="Index"
+               class="btn btn-secondary btn-lg">
+                &larr; Back to Products
+            </a>
+
+            <button type="submit"
+                    class="btn btn-primary btn-lg">
+                Create Product &rarr;
+            </button>
+
+        </div>
+
+    </form>
+
+</section>

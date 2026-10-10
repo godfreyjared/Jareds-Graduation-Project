@@ -3,10 +3,25 @@
 
 @{
     ViewData["Title"] = "Products";
+
     var inventory = (List<Inventory>)ViewBag.Inventory;
+
+    int? selectedStoreID = ViewBag.StoreID == null
+        ? null
+        : (int)ViewBag.StoreID;
+
+    bool cartHasItems = ViewBag.CartHasItems == true;
+
+    string storeName = selectedStoreID switch
+    {
+        1 => "Houston",
+        2 => "Dallas",
+        3 => "San Antonio",
+        _ => "No Store Selected"
+    };
 }
 
-<h1>Products</h1>
+<h1>Continental Computing Solutions</h1>
 
 @if (TempData["Message"] != null)
 {
@@ -15,79 +30,195 @@
     </p>
 }
 
-<a asp-controller="Products"
-   asp-action="Create"
-   class="btn btn-primary">
-    Create New Product
-</a>
-
-<hr />
-
-@foreach (var product in Model)
+@if (selectedStoreID == null)
 {
-    var inventoryItem = inventory.FirstOrDefault(i =>
-        i.StoreID == 1 &&
-        i.ProductID == product.ProductID);
+    <h2>Select Your Store</h2>
 
-    <div>
-        <h2>@product.ProductName</h2>
+    <p>
+        Choose a location to view available products
+        and begin shopping.
+    </p>
 
-        <p>Category: @product.ProductCategory</p>
+    <form asp-controller="Cart"
+          asp-action="SelectStore"
+          method="post">
 
-        <p>Price: @product.ProductPrice.ToString("C")</p>
+        @Html.AntiForgeryToken()
 
-        <p>
-            Available in Houston:
-            <span id="stock-@product.ProductID">
-                @(inventoryItem?.Quantity ?? 0)
-            </span>
-        </p>
+        <div class="mb-3">
+            <label for="storeID" class="form-label">
+                Store Location:
+            </label>
 
-        <a asp-controller="Cart"
-           asp-action="AddToCart"
-           asp-route-productID="@product.ProductID">
-            Add to Cart
-        </a>
+            <select name="storeID"
+                    id="storeID"
+                    class="form-select">
 
-        <a asp-controller="Products"
-           asp-action="Edit"
-           asp-route-id="@product.ProductID"
-           class="btn btn-secondary">
-            Edit Product
-        </a>
+                <option value="1">Houston</option>
+                <option value="2">Dallas</option>
+                <option value="3">San Antonio</option>
 
-        <a asp-controller="Products"
-           asp-action="Delete"
-           asp-route-id="@product.ProductID"
-           class="btn btn-danger">
-            Delete Product
-        </a>
-    </div>
+            </select>
+        </div>
 
-    <hr />
+        <button type="submit" class="btn btn-primary">
+            Shop This Store
+        </button>
+    </form>
 }
+else
+{
+    <h2>Shopping at @storeName</h2>
 
-<script>
-    async function updateStock() {
-        try {
-            const response = await fetch('/Products/GetStock');
+    <p>
+        All products added to your cart will be
+        reserved from the @storeName location.
+    </p>
 
-            if (!response.ok) return;
+    @if (!cartHasItems)
+    {
+        <form asp-controller="Cart"
+              asp-action="SelectStore"
+              method="post">
 
-            const stock = await response.json();
+            @Html.AntiForgeryToken()
 
-            stock.forEach(item => {
-                const element =
-                    document.getElementById(`stock-${item.productID}`);
+            <label for="storeID" class="form-label">
+                Change Store:
+            </label>
 
-                if (element) {
-                    element.textContent = item.quantity;
-                }
-            });
-        } catch (error) {
-            console.error("Unable to update stock:", error);
-        }
+            <select name="storeID"
+                    id="storeID"
+                    class="form-select mb-2">
+
+                <option value="1"
+                        selected="@(selectedStoreID == 1)">
+                    Houston
+                </option>
+
+                <option value="2"
+                        selected="@(selectedStoreID == 2)">
+                    Dallas
+                </option>
+
+                <option value="3"
+                        selected="@(selectedStoreID == 3)">
+                    San Antonio
+                </option>
+
+            </select>
+
+            <button type="submit" class="btn btn-secondary">
+                Change Store
+            </button>
+        </form>
+    }
+    else
+    {
+        <p>
+            <strong>
+                Complete checkout or empty your cart
+                before changing stores.
+            </strong>
+        </p>
     }
 
-    setInterval(updateStock, 10000);
-</script>
+    <hr />
+
+    <a asp-controller="Products"
+       asp-action="Create"
+       class="btn btn-primary">
+        Create New Product
+    </a>
+
+    <hr />
+
+    @foreach (var product in Model)
+    {
+        var inventoryItem = inventory.FirstOrDefault(i =>
+            i.StoreID == selectedStoreID.Value &&
+            i.ProductID == product.ProductID);
+
+        <div>
+            <h2>@product.ProductName</h2>
+
+            <p>Category: @product.ProductCategory</p>
+
+            <p>Price: @product.ProductPrice.ToString("C")</p>
+
+            <p>
+                Available in @storeName:
+                <span id="stock-@product.ProductID">
+                    @(inventoryItem?.Quantity ?? 0)
+                </span>
+            </p>
+
+            @if (inventoryItem != null &&
+                inventoryItem.Quantity > 0)
+            {
+                <a asp-controller="Cart"
+                   asp-action="AddToCart"
+                   asp-route-productID="@product.ProductID"
+                   class="btn btn-success">
+                    Add to Cart
+                </a>
+            }
+            else
+            {
+                <span class="text-danger">
+                    Out of Stock
+                </span>
+            }
+
+            <a asp-controller="Products"
+               asp-action="Edit"
+               asp-route-id="@product.ProductID"
+               class="btn btn-secondary">
+                Edit Product
+            </a>
+
+            <a asp-controller="Products"
+               asp-action="Delete"
+               asp-route-id="@product.ProductID"
+               class="btn btn-danger">
+                Delete Product
+            </a>
+        </div>
+
+        <hr />
+    }
+
+    <script>
+        async function updateStock() {
+            try {
+                const response = await fetch(
+                    '@Url.Action("GetStock", "Products", new { storeID = selectedStoreID })',
+                    { cache: "no-store" }
+                );
+
+                if (!response.ok) return;
+
+                const stock = await response.json();
+
+                stock.forEach(item => {
+                    const element =
+                        document.getElementById(
+                            `stock-${item.productID}`
+                        );
+
+                    if (element) {
+                        element.textContent = item.quantity;
+                    }
+                });
+
+            } catch (error) {
+                console.error(
+                    "Unable to update stock:",
+                    error
+                );
+            }
+        }
+
+        setInterval(updateStock, 10000);
+    </script>
+}

@@ -1,15 +1,80 @@
 ﻿@{
     ViewData["Title"] = "Order Complete";
+
+    decimal orderTotal = ViewBag.OrderTotal == null
+        ? 0m
+        : (decimal)ViewBag.OrderTotal;
 }
 
-<h1>Order Complete!</h1>
+<section class="ccs-checkout-page">
 
-<p>Thank you for your purchase.</p>
+    <div class="ccs-checkout-success">
 
-<h3>Order Total: @ViewBag.OrderTotal.ToString("C")</h3>
+        <div class="ccs-checkout-success-icon"
+             aria-hidden="true">
+            &#10003;
+        </div>
 
-<p>Your order has been successfully processed.</p>
+        <span class="ccs-eyebrow">
+            CONTINENTAL COMPUTING SOLUTIONS
+        </span>
 
-<a asp-controller="Products" asp-action="Index">
-    Continue Shopping
-</a>
+        <h1>Order Complete!</h1>
+
+        <p class="ccs-checkout-success-message">
+            Your order has been successfully processed.
+            Thank you for shopping with Continental
+            Computing Solutions.
+        </p>
+
+        <div class="ccs-checkout-receipt">
+
+            <div class="ccs-checkout-receipt-heading">
+                <span>ORDER CONFIRMATION</span>
+                <span class="ccs-checkout-complete-label">
+                    Completed
+                </span>
+            </div>
+
+            <div class="ccs-checkout-receipt-row">
+                <span>Order Status</span>
+                <strong>Completed</strong>
+            </div>
+
+            <div class="ccs-checkout-receipt-row">
+                <span>Inventory Status</span>
+                <strong>Reservation Finalized</strong>
+            </div>
+
+            <div class="ccs-checkout-receipt-total">
+                <span>Order Total</span>
+                <strong>@orderTotal.ToString("C")</strong>
+            </div>
+
+        </div>
+
+        <p class="ccs-checkout-footer-message">
+            Your cart has been cleared and you can now
+            select any of our three Texas locations
+            for your next order.
+        </p>
+
+        <div class="ccs-checkout-actions">
+
+            <a asp-controller="Products"
+               asp-action="Index"
+               class="btn btn-primary btn-lg">
+                Continue Shopping &rarr;
+            </a>
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="btn btn-secondary btn-lg">
+                Return Home
+            </a>
+
+        </div>
+
+    </div>
+
+</section>

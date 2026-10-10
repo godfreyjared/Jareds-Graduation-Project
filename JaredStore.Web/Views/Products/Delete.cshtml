@@ -4,67 +4,163 @@
     ViewData["Title"] = "Delete Product";
 }
 
-<h1>Delete Product</h1>
+<section class="ccs-admin-page">
 
-@if (ViewBag.Message != null)
-{
-    <p style="color: red; font-weight: bold;">
-        @ViewBag.Message
-    </p>
-}
-
-<p>Are you sure you want to delete this product?</p>
-
-<h3>@Model.ProductName</h3>
-
-<p>Category: @Model.ProductCategory</p>
-<p>Price: @Model.ProductPrice.ToString("C")</p>
-
-<p>
-    This will also remove the product's inventory records
-    from Houston, Dallas, and San Antonio.
-</p>
-
-<form asp-controller="Products"
-      asp-action="Delete"
-      method="post">
-
-    @Html.AntiForgeryToken()
-
-    <input type="hidden"
-           name="productID"
-           value="@Model.ProductID" />
-
-    <hr />
-
-    <h3>Employee Authorization</h3>
-
-    <div>
-        <label>Employee Username:</label>
-        <input type="text"
-               name="username"
-               autocomplete="username"
-               required />
+    <div class="ccs-page-heading">
+        <span class="ccs-eyebrow">CONTINENTAL OPERATIONS</span>
+        <h1>Delete Product</h1>
+        <p>
+            Review the product details before permanently
+            removing this item from the catalog.
+        </p>
     </div>
 
-    <div>
-        <label>Employee Password:</label>
-        <input type="password"
-               name="password"
-               autocomplete="off"
-               required />
+    @if (ViewBag.Message != null)
+    {
+        <div class="ccs-notice" role="alert">
+            @ViewBag.Message
+        </div>
+    }
+
+    <div class="ccs-delete-warning" role="alert">
+
+        <div class="ccs-delete-warning-icon"
+             aria-hidden="true">
+            !
+        </div>
+
+        <div>
+            <h2>Are you sure you want to delete this product?</h2>
+
+            <p>
+                This action will remove the product from the
+                catalog and delete its inventory records
+                from Houston, Dallas, and San Antonio.
+            </p>
+
+            <strong>This action cannot be undone.</strong>
+        </div>
+
     </div>
 
-    <br />
+    <section class="ccs-admin-panel">
 
-    <button type="submit" class="btn btn-danger">
-        Confirm Delete
-    </button>
-</form>
+        <div class="ccs-admin-panel-heading">
 
-<p>
-    <a asp-controller="Products"
-       asp-action="Index">
-        Cancel
-    </a>
-</p>
+            <span class="ccs-admin-step">01</span>
+
+            <div>
+                <span class="ccs-eyebrow">PRODUCT MANAGEMENT</span>
+                <h2>Product to Be Deleted</h2>
+                <p>Verify that you selected the correct product.</p>
+            </div>
+
+        </div>
+
+        <div class="ccs-delete-product-details">
+
+            <div class="ccs-delete-detail">
+                <span>Product ID</span>
+                <strong>@Model.ProductID</strong>
+            </div>
+
+            <div class="ccs-delete-detail">
+                <span>Product Name</span>
+                <strong>@Model.ProductName</strong>
+            </div>
+
+            <div class="ccs-delete-detail">
+                <span>Category</span>
+                <strong>@Model.ProductCategory</strong>
+            </div>
+
+            <div class="ccs-delete-detail">
+                <span>Unit Price</span>
+                <strong>@Model.ProductPrice.ToString("C")</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <form asp-controller="Products"
+          asp-action="Delete"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden"
+               name="productID"
+               value="@Model.ProductID" />
+
+        <section class="ccs-admin-panel">
+
+            <div class="ccs-admin-panel-heading">
+
+                <span class="ccs-admin-step">02</span>
+
+                <div>
+                    <span class="ccs-eyebrow">AUTHORIZED PERSONNEL</span>
+                    <h2>Employee Authorization</h2>
+                    <p>
+                        Enter your employee credentials
+                        to authorize product deletion.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="ccs-admin-fields">
+
+                <div class="ccs-field">
+
+                    <label for="username">
+                        Employee Username
+                    </label>
+
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           class="form-control"
+                           autocomplete="username"
+                           required />
+
+                </div>
+
+                <div class="ccs-field">
+
+                    <label for="password">
+                        Employee Password
+                    </label>
+
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           class="form-control"
+                           autocomplete="off"
+                           required />
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <div class="ccs-admin-actions">
+
+            <a asp-controller="Products"
+               asp-action="Index"
+               class="btn btn-secondary btn-lg">
+                &larr; Cancel
+            </a>
+
+            <button type="submit"
+                    class="btn btn-danger btn-lg">
+                Confirm Delete
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
