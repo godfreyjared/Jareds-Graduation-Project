@@ -7,7 +7,7 @@ namespace JaredStore.Web.Controllers
     public class CartController : Controller
     {
         // One shared cart and selected store for this demo
-        private static readonly List<CartItem> cart = new();
+        private static readonly List<CartItem> cart = [];
 
         private static int? selectedStoreID = null;
 
