@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Jared_s_Graduation_Project
+﻿namespace Jared_s_Graduation_Project
 {
     public class Product
     {
-        public string ProductName { get; set; }
+        public string ProductName { get; set; } = string.Empty;
         public int ProductID { get; set; }
         public decimal ProductPrice { get; set; }
-        public string ProductCategory { get; set; }
+        public string ProductCategory { get; set; } = string.Empty;
     }
 }

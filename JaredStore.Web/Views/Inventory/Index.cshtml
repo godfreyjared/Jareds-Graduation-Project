@@ -25,22 +25,24 @@
         <span class="ccs-eyebrow">CONTINENTAL OPERATIONS</span>
         <h1>Store Inventory</h1>
         <p>
-            View live inventory across our three Texas locations
-            and manage stock transfers.
+            Monitor live stock, transfer inventory between locations,
+            and manage employee reservations.
         </p>
     </div>
 
     @if (TempData["Message"] != null)
     {
-        <div class="ccs-notice" role="status">
+        <div class="ccs-notice @(TempData["MessageType"]?.ToString() == "error" ? "ccs-notice-error" : "")"
+             role="status">
             @TempData["Message"]
         </div>
     }
 
     <section class="ccs-dashboard-section">
+
         <div class="ccs-section-heading">
             <h2>Select a Location</h2>
-            <p>Choose a store to view its available stock.</p>
+            <p>Choose a store to view its current inventory.</p>
         </div>
 
         <div class="ccs-store-grid">
@@ -54,9 +56,7 @@
                 <span class="ccs-store-icon">01</span>
                 <span class="ccs-store-name">Houston</span>
                 <span class="ccs-store-caption">Texas Location</span>
-                <span class="ccs-store-action">
-                    View Inventory &rarr;
-                </span>
+                <span class="ccs-store-action">View Inventory &rarr;</span>
             </a>
 
             <a asp-controller="Inventory"
@@ -68,9 +68,7 @@
                 <span class="ccs-store-icon">02</span>
                 <span class="ccs-store-name">Dallas</span>
                 <span class="ccs-store-caption">Texas Location</span>
-                <span class="ccs-store-action">
-                    View Inventory &rarr;
-                </span>
+                <span class="ccs-store-action">View Inventory &rarr;</span>
             </a>
 
             <a asp-controller="Inventory"
@@ -82,12 +80,11 @@
                 <span class="ccs-store-icon">03</span>
                 <span class="ccs-store-name">San Antonio</span>
                 <span class="ccs-store-caption">Texas Location</span>
-                <span class="ccs-store-action">
-                    View Inventory &rarr;
-                </span>
+                <span class="ccs-store-action">View Inventory &rarr;</span>
             </a>
 
         </div>
+
     </section>
 
     @if (selectedStoreID != null)
@@ -98,23 +95,28 @@
                 <span class="ccs-eyebrow">LIVE STOCK MONITOR</span>
                 <h2>@storeName Inventory</h2>
                 <p>
-                    Available quantities refresh automatically
-                    every 10 seconds.
+                    Available and reserved quantities
+                    refresh automatically every 10 seconds.
                 </p>
             </div>
 
             <div class="ccs-table-wrapper">
+
                 <table class="ccs-inventory-table">
+
                     <thead>
                         <tr>
                             <th>Product</th>
                             <th>Category</th>
                             <th>Unit Price</th>
-                            <th>Available Stock</th>
+                            <th>Available</th>
+                            <th>Total Reserved</th>
+                            <th>Employee Reserved</th>
                         </tr>
                     </thead>
 
                     <tbody>
+
                         @foreach (var item in Model)
                         {
                             var product = products.FirstOrDefault(p =>
@@ -123,6 +125,7 @@
                             if (product != null)
                             {
                                 <tr>
+
                                     <td class="ccs-product-name">
                                         @product.ProductName
                                     </td>
@@ -134,19 +137,35 @@
                                     </td>
 
                                     <td>
-                                        <span class="ccs-stock-badge"
+                                        <span class="ccs-stock-badge @(item.Quantity <= 0 ? "is-out-of-stock" : "")"
                                               id="stock-badge-@item.ProductID">
+
                                             <span id="quantity-@item.ProductID">
                                                 @item.Quantity
                                             </span>
-                                            available
                                         </span>
                                     </td>
+
+                                    <td>
+                                        <span id="reserved-@item.ProductID">
+                                            @item.ReservedQuantity
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span id="employee-reserved-@item.ProductID">
+                                            @item.EmployeeReservedQuantity
+                                        </span>
+                                    </td>
+
                                 </tr>
                             }
                         }
+
                     </tbody>
+
                 </table>
+
             </div>
 
         </section>
@@ -172,6 +191,7 @@
             <div class="ccs-form-grid">
 
                 <div class="ccs-field">
+
                     <label for="fromStoreID">From Store</label>
 
                     <select id="fromStoreID"
@@ -192,9 +212,11 @@
                         </option>
 
                     </select>
+
                 </div>
 
                 <div class="ccs-field">
+
                     <label for="toStoreID">To Store</label>
 
                     <select id="toStoreID"
@@ -211,12 +233,14 @@
                         <option value="3">San Antonio</option>
 
                     </select>
+
                 </div>
 
                 <div class="ccs-field">
-                    <label for="productID">Product</label>
 
-                    <select id="productID"
+                    <label for="transferProductID">Product</label>
+
+                    <select id="transferProductID"
                             name="productID"
                             class="form-select"
                             required>
@@ -229,18 +253,21 @@
                         }
 
                     </select>
+
                 </div>
 
                 <div class="ccs-field">
-                    <label for="quantity">Transfer Quantity</label>
 
-                    <input id="quantity"
+                    <label for="transferQuantity">Transfer Quantity</label>
+
+                    <input id="transferQuantity"
                            type="number"
                            name="quantity"
                            min="1"
                            class="form-control"
                            placeholder="Enter quantity"
                            required />
+
                 </div>
 
             </div>
@@ -259,29 +286,33 @@
                 <div class="ccs-form-grid">
 
                     <div class="ccs-field">
-                        <label for="username">
+
+                        <label for="transferUsername">
                             Employee Username
                         </label>
 
-                        <input id="username"
+                        <input id="transferUsername"
                                type="text"
                                name="username"
                                class="form-control"
                                autocomplete="username"
                                required />
+
                     </div>
 
                     <div class="ccs-field">
-                        <label for="password">
+
+                        <label for="transferPassword">
                             Employee Password
                         </label>
 
-                        <input id="password"
+                        <input id="transferPassword"
                                type="password"
                                name="password"
                                class="form-control"
                                autocomplete="off"
                                required />
+
                     </div>
 
                 </div>
@@ -292,6 +323,153 @@
                     class="btn btn-primary btn-lg ccs-transfer-button">
                 Confirm Inventory Transfer &rarr;
             </button>
+
+        </form>
+
+    </section>
+
+    <section class="ccs-dashboard-section ccs-transfer-panel">
+
+        <div class="ccs-section-heading">
+            <span class="ccs-eyebrow">EMPLOYEE STOCK CONTROL</span>
+            <h2>Manage Stock Reservations</h2>
+            <p>
+                Reserve products for employee handling
+                or return employee-held items to available stock.
+            </p>
+        </div>
+
+        <form asp-controller="Inventory"
+              asp-action="ReserveStock"
+              method="post"
+              id="reservationForm">
+
+            @Html.AntiForgeryToken()
+
+            <div class="ccs-form-grid">
+
+                <div class="ccs-field">
+
+                    <label for="reservationStoreID">Store</label>
+
+                    <select id="reservationStoreID"
+                            name="storeID"
+                            class="form-select"
+                            required>
+
+                        <option value="1" selected="@(selectedStoreID == 1)">
+                            Houston
+                        </option>
+
+                        <option value="2" selected="@(selectedStoreID == 2)">
+                            Dallas
+                        </option>
+
+                        <option value="3" selected="@(selectedStoreID == 3)">
+                            San Antonio
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="ccs-field">
+
+                    <label for="reservationProductID">Product</label>
+
+                    <select id="reservationProductID"
+                            name="productID"
+                            class="form-select"
+                            required>
+
+                        @foreach (var product in products)
+                        {
+                            <option value="@product.ProductID">
+                                @product.ProductName
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="ccs-field">
+
+                    <label for="reservationQuantity">Quantity</label>
+
+                    <input id="reservationQuantity"
+                           type="number"
+                           name="quantity"
+                           min="1"
+                           class="form-control"
+                           placeholder="Enter quantity"
+                           required />
+
+                </div>
+
+            </div>
+
+            <div class="ccs-auth-panel">
+
+                <div class="ccs-section-heading">
+                    <span class="ccs-eyebrow">EMPLOYEE AUTHORIZATION</span>
+                    <h3>Verify Credentials</h3>
+                    <p>
+                        Authorization is required for both
+                        reserving and returning stock.
+                    </p>
+                </div>
+
+                <div class="ccs-form-grid">
+
+                    <div class="ccs-field">
+
+                        <label for="reservationUsername">
+                            Employee Username
+                        </label>
+
+                        <input id="reservationUsername"
+                               type="text"
+                               name="username"
+                               class="form-control"
+                               autocomplete="username"
+                               required />
+
+                    </div>
+
+                    <div class="ccs-field">
+
+                        <label for="reservationPassword">
+                            Employee Password
+                        </label>
+
+                        <input id="reservationPassword"
+                               type="password"
+                               name="password"
+                               class="form-control"
+                               autocomplete="off"
+                               required />
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="ccs-reservation-actions">
+
+                <button type="submit"
+                        class="btn btn-primary btn-lg">
+                    Reserve Stock
+                </button>
+
+                <button type="submit"
+                        formaction="@Url.Action("ReturnReservedStock", "Inventory")"
+                        class="btn btn-secondary btn-lg">
+                    Return to Shelf
+                </button>
+
+            </div>
 
         </form>
 
@@ -314,29 +492,50 @@
                 const inventory = await response.json();
 
                 inventory.forEach(item => {
-                    const quantityElement =
+
+                    const available =
                         document.getElementById(
                             `quantity-${item.productID}`
                         );
 
-                    const badgeElement =
+                    const reserved =
+                        document.getElementById(
+                            `reserved-${item.productID}`
+                        );
+
+                    const employeeReserved =
+                        document.getElementById(
+                            `employee-reserved-${item.productID}`
+                        );
+
+                    const badge =
                         document.getElementById(
                             `stock-badge-${item.productID}`
                         );
 
-                    if (quantityElement) {
-                        quantityElement.textContent = item.quantity;
+                    if (available) {
+                        available.textContent = item.quantity;
                     }
 
-                    if (badgeElement) {
-                        badgeElement.classList.toggle(
+                    if (reserved) {
+                        reserved.textContent = item.reservedQuantity;
+                    }
+
+                    if (employeeReserved) {
+                        employeeReserved.textContent =
+                            item.employeeReservedQuantity;
+                    }
+
+                    if (badge) {
+                        badge.classList.toggle(
                             "is-out-of-stock",
                             item.quantity <= 0
                         );
                     }
+
                 });
-            }
-            catch (error) {
+
+            } catch (error) {
                 console.error("Inventory refresh failed:", error);
             }
         }

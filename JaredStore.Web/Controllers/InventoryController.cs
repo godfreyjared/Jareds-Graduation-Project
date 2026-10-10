@@ -35,14 +35,17 @@ namespace JaredStore.Web.Controllers
                 .Select(item => new
                 {
                     productID = item.ProductID,
-                    quantity = item.Quantity
+                    quantity = item.Quantity,
+                    reservedQuantity = item.ReservedQuantity,
+                    employeeReservedQuantity =
+                        item.EmployeeReservedQuantity
                 })
                 .ToList();
 
             return Json(stock);
         }
 
-        // Transfer inventory between stores
+        // Transfer available inventory between stores
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult MoveInventory(
@@ -53,30 +56,25 @@ namespace JaredStore.Web.Controllers
             string? username,
             string? password)
         {
-            // Employee authorization
             if (!EmployeeAccess.IsValid(username, password))
             {
-                TempData["Message"] =
-                    "Invalid employee username or password.";
+                SetError("Invalid employee username or password.");
 
                 return RedirectToAction("Index",
                     new { storeID = fromStoreID });
             }
 
-            // Validate store IDs
             if (fromStoreID < 1 || fromStoreID > 3 ||
                 toStoreID < 1 || toStoreID > 3)
             {
-                TempData["Message"] = "Invalid store selection.";
+                SetError("Invalid store selection.");
 
                 return RedirectToAction("Index");
             }
 
-            // Prevent transferring to the same store
             if (fromStoreID == toStoreID)
             {
-                TempData["Message"] =
-                    "Please select two different stores.";
+                SetError("Please select two different stores.");
 
                 return RedirectToAction("Index",
                     new { storeID = fromStoreID });
@@ -92,47 +90,188 @@ namespace JaredStore.Web.Controllers
                     item.StoreID == toStoreID &&
                     item.ProductID == productID);
 
-            // Verify inventory exists in both stores
             if (fromInventoryItem == null || toInventoryItem == null)
             {
-                TempData["Message"] =
-                    "Product could not be found.";
+                SetError("Product could not be found.");
 
                 return RedirectToAction("Index",
                     new { storeID = fromStoreID });
             }
 
-            // Prevent invalid or excessive transfers
             if (quantity <= 0 ||
                 fromInventoryItem.Quantity < quantity)
             {
-                TempData["Message"] =
-                    "Not enough inventory available to complete the transfer.";
+                SetError(
+                    "Not enough inventory available to complete the transfer.");
 
                 return RedirectToAction("Index",
                     new { storeID = fromStoreID });
             }
 
-            // Move available inventory between stores
             fromInventoryItem.Quantity -= quantity;
             toInventoryItem.Quantity += quantity;
 
             var product = StoreData.Products.FirstOrDefault(p =>
                 p.ProductID == productID);
 
-            string fromStoreName = fromStoreID == 1 ? "Houston" :
-                                   fromStoreID == 2 ? "Dallas" :
-                                   "San Antonio";
+            string fromStoreName = GetStoreName(fromStoreID);
+            string toStoreName = GetStoreName(toStoreID);
 
-            string toStoreName = toStoreID == 1 ? "Houston" :
-                                 toStoreID == 2 ? "Dallas" :
-                                 "San Antonio";
-
-            TempData["Message"] =
-                $"Successfully moved {quantity} {product?.ProductName} from {fromStoreName} to {toStoreName}.";
+            SetSuccess(
+                $"Successfully moved {quantity} {product?.ProductName} from {fromStoreName} to {toStoreName}.");
 
             return RedirectToAction("Index",
                 new { storeID = fromStoreID });
+        }
+
+        // Employee moves available stock into reserve
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ReserveStock(
+            int storeID,
+            int productID,
+            int quantity,
+            string? username,
+            string? password)
+        {
+            if (!EmployeeAccess.IsValid(username, password))
+            {
+                SetError("Invalid employee username or password.");
+
+                return RedirectToAction("Index",
+                    new { storeID });
+            }
+
+            if (storeID < 1 || storeID > 3 || quantity <= 0)
+            {
+                SetError("Invalid store or quantity.");
+
+                return RedirectToAction("Index",
+                    new { storeID });
+            }
+
+            var inventoryItem =
+                StoreData.Inventory.FirstOrDefault(item =>
+                    item.StoreID == storeID &&
+                    item.ProductID == productID);
+
+            if (inventoryItem == null)
+            {
+                SetError("Product is not available in this store.");
+
+                return RedirectToAction("Index",
+                    new { storeID });
+            }
+
+            if (inventoryItem.Quantity < quantity)
+            {
+                SetError("Not enough available inventory to reserve.");
+
+                return RedirectToAction("Index",
+                    new { storeID });
+            }
+
+            inventoryItem.Quantity -= quantity;
+            inventoryItem.ReservedQuantity += quantity;
+            inventoryItem.EmployeeReservedQuantity += quantity;
+
+            var product = StoreData.Products.FirstOrDefault(p =>
+                p.ProductID == productID);
+
+            SetSuccess(
+                $"Successfully reserved {quantity} {product?.ProductName} at {GetStoreName(storeID)}.");
+
+            return RedirectToAction("Index",
+                new { storeID });
+        }
+
+        // Employee returns manually reserved stock to the shelf
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ReturnReservedStock(
+            int storeID,
+            int productID,
+            int quantity,
+            string? username,
+            string? password)
+        {
+            if (!EmployeeAccess.IsValid(username, password))
+            {
+                SetError("Invalid employee username or password.");
+
+                return RedirectToAction("Index",
+                    new { storeID });
+            }
+
+            if (storeID < 1 || storeID > 3 || quantity <= 0)
+            {
+                SetError("Invalid store or quantity.");
+
+                return RedirectToAction("Index",
+                    new { storeID });
+            }
+
+            var inventoryItem =
+                StoreData.Inventory.FirstOrDefault(item =>
+                    item.StoreID == storeID &&
+                    item.ProductID == productID);
+
+            if (inventoryItem == null)
+            {
+                SetError("Product is not available in this store.");
+
+                return RedirectToAction("Index",
+                    new { storeID });
+            }
+
+            // Never return stock reserved by customer carts
+            if (inventoryItem.EmployeeReservedQuantity < quantity ||
+                inventoryItem.ReservedQuantity < quantity)
+            {
+                SetError(
+                    "The requested quantity exceeds employee-reserved stock.");
+
+                return RedirectToAction("Index",
+                    new { storeID });
+            }
+
+            inventoryItem.EmployeeReservedQuantity -= quantity;
+            inventoryItem.ReservedQuantity -= quantity;
+            inventoryItem.Quantity += quantity;
+
+            var product = StoreData.Products.FirstOrDefault(p =>
+                p.ProductID == productID);
+
+            SetSuccess(
+                $"Successfully returned {quantity} {product?.ProductName} to available inventory at {GetStoreName(storeID)}.");
+
+            return RedirectToAction("Index",
+                new { storeID });
+        }
+
+        // Mark failed operations as errors
+        private void SetError(string message)
+        {
+            TempData["Message"] = message;
+            TempData["MessageType"] = "error";
+        }
+
+        // Mark completed operations as successful
+        private void SetSuccess(string message)
+        {
+            TempData["Message"] = message;
+            TempData["MessageType"] = "success";
+        }
+
+        private static string GetStoreName(int storeID)
+        {
+            return storeID switch
+            {
+                1 => "Houston",
+                2 => "Dallas",
+                3 => "San Antonio",
+                _ => "Unknown Store"
+            };
         }
     }
 }

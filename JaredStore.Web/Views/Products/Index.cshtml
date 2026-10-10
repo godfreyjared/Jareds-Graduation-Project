@@ -139,6 +139,8 @@ else
             i.StoreID == selectedStoreID.Value &&
             i.ProductID == product.ProductID);
 
+        int availableQuantity = inventoryItem?.Quantity ?? 0;
+
         <div>
             <h2>@product.ProductName</h2>
 
@@ -149,26 +151,28 @@ else
             <p>
                 Available in @storeName:
                 <span id="stock-@product.ProductID">
-                    @(inventoryItem?.Quantity ?? 0)
+                    @availableQuantity
                 </span>
             </p>
 
-            @if (inventoryItem != null &&
-                inventoryItem.Quantity > 0)
-            {
+            <span id="cart-action-@product.ProductID">
+
                 <a asp-controller="Cart"
                    asp-action="AddToCart"
                    asp-route-productID="@product.ProductID"
-                   class="btn btn-success">
+                   class="btn btn-success"
+                   data-cart-button
+                   hidden="@(availableQuantity <= 0)">
                     Add to Cart
                 </a>
-            }
-            else
-            {
-                <span class="text-danger">
+
+                <span class="text-danger"
+                      data-out-of-stock
+                      hidden="@(availableQuantity > 0)">
                     Out of Stock
                 </span>
-            }
+
+            </span>
 
             <a asp-controller="Products"
                asp-action="Edit"
@@ -201,13 +205,40 @@ else
                 const stock = await response.json();
 
                 stock.forEach(item => {
-                    const element =
+                    const stockElement =
                         document.getElementById(
                             `stock-${item.productID}`
                         );
 
-                    if (element) {
-                        element.textContent = item.quantity;
+                    const actionContainer =
+                        document.getElementById(
+                            `cart-action-${item.productID}`
+                        );
+
+                    if (stockElement) {
+                        stockElement.textContent = item.quantity;
+                    }
+
+                    if (actionContainer) {
+                        const addButton =
+                            actionContainer.querySelector(
+                                '[data-cart-button]'
+                            );
+
+                        const outOfStock =
+                            actionContainer.querySelector(
+                                '[data-out-of-stock]'
+                            );
+
+                        const isAvailable = item.quantity > 0;
+
+                        if (addButton) {
+                            addButton.hidden = !isAvailable;
+                        }
+
+                        if (outOfStock) {
+                            outOfStock.hidden = isAvailable;
+                        }
                     }
                 });
 
@@ -219,6 +250,7 @@ else
             }
         }
 
+        updateStock();
         setInterval(updateStock, 10000);
     </script>
 }
