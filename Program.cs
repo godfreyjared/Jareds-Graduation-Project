@@ -1,148 +1,103 @@
-﻿using Jared_s_Graduation_Project;
+﻿
+using Jared_s_Graduation_Project;
 
-//3 Mock store locations 
-// Add to cart function 
-// Checkout function
-// Display order summary function
-// Move inventory between stores function
-// Display inventory function
-// Autorefresh to display inventory function
-// CRUD functions for products and stores
-// Take off site to keep in store inventory function
-
-var store1 = new Store
-{
-    StoreName = "Continental Computing Solutions HQ",
-    StoreLocation = "Houston",
-    StoreID = 1
-};
-
-var store2 = new Store
-{
-    StoreName = "Continental Computing Solutions in Dallas",
-    StoreLocation = "Dallas",
-    StoreID = 2
-};
-
-var store3 = new Store
-{
-    StoreName = "Continental Computing Solutions in San Antonio",
-    StoreLocation = "San Antonio",
-    StoreID = 3
-};
-
-
-// ONE central product list
-var products = StoreData.Products;
-
-// ONE central inventory list
-var inventory = StoreData.Inventory;
-
+// Continental Computing Solutions
+// Console demonstration and testing application.
+//
+// Set runTests to true to run the demonstration.
+// Set runTests to false when using the website normally.
 
 bool runTests = false;
 
 if (runTests)
 {
+    RunDemonstration();
+}
 
-    // Testing location
+void RunDemonstration()
+{
+    // Use separate copies so tests do not modify StoreData.
+    var products = StoreData.Products
+        .Select(p => new Product
+        {
+            ProductID = p.ProductID,
+            ProductName = p.ProductName,
+            ProductCategory = p.ProductCategory,
+            ProductPrice = p.ProductPrice
+        })
+        .ToList();
 
-    AddProductToInventory(inventory, 1, 5, 1);
+    var inventory = StoreData.Inventory
+        .Select(i => new Inventory
+        {
+            InventoryID = i.InventoryID,
+            StoreID = i.StoreID,
+            ProductID = i.ProductID,
+            Quantity = i.Quantity,
+            ReservedQuantity = i.ReservedQuantity,
+            EmployeeReservedQuantity = i.EmployeeReservedQuantity
+        })
+        .ToList();
 
     var cart = new List<CartItem>();
 
-    AddToCart(cart, inventory, 1, 5, 2);
+    Console.WriteLine("CONTINENTAL COMPUTING SOLUTIONS");
+    Console.WriteLine("Inventory Management Demonstration");
+    Console.WriteLine(new string('=', 45));
 
-    DisplayOrderSummary(cart, products);
-
-    Checkout(cart, inventory, 1);
-
-    MoveInventory(inventory, 1, 2, 1, 2);
-
+    ShowSection("1. Display Houston Inventory");
     DisplayInventory(inventory, products, 1);
 
-    MoveItemToReserve(inventory, 1, 1, 2);
+    ShowSection("2. Add Inventory");
+    AddProductToInventory(inventory, 1, 5, 1);
+    DisplayInventory(inventory, products, 1);
 
-    ReturnItemFromReserve(inventory, 1, 1, 2);
+    ShowSection("3. Add to Cart");
+    AddToCart(cart, inventory, 1, 5, 2);
+    DisplayOrderSummary(cart, products);
 
-    CreateProduct(products, 9, "New Product", "Category", 49.99m);
+    ShowSection("4. Checkout");
+    Checkout(cart, inventory, 1);
+    DisplayInventory(inventory, products, 1);
 
-    UpdateProduct(products, 9, "Updated Product", "Updated Category", 59.99m);
+    ShowSection("5. Transfer Inventory");
+    MoveInventory(inventory, 1, 2, 1, 2);
+    DisplayInventory(inventory, products, 1);
+    DisplayInventory(inventory, products, 2);
 
+    ShowSection("6. Reserve Inventory");
+    MoveItemToReserve(inventory, 1, 1, 1);
+    DisplayInventory(inventory, products, 1);
+
+    ShowSection("7. Return Reserved Inventory");
+    ReturnItemFromReserve(inventory, 1, 1, 1);
+    DisplayInventory(inventory, products, 1);
+
+    ShowSection("8. Create Product");
+    CreateProduct(
+        products, 9, "New Product", "Category", 49.99m);
     DisplayProduct(products, 9);
 
-    // End of testing location
+    ShowSection("9. Update Product");
+    UpdateProduct(
+        products, 9, "Updated Product",
+        "Updated Category", 59.99m);
+    DisplayProduct(products, 9);
 
-// Message and variable Center.
-
-var updatedProduct = products.FirstOrDefault(p => p.ProductID == 9);
-
-if (updatedProduct != null)
-{
-    Console.WriteLine($"Updated Name: {updatedProduct.ProductName}");
-    Console.WriteLine($"Updated Category: {updatedProduct.ProductCategory}");
-    Console.WriteLine($"Updated Price: {updatedProduct.ProductPrice:C}");
-}
-
-var reservedCPU = inventory.FirstOrDefault(item =>
-    item.StoreID == 1 &&
-    item.ProductID == 1);
-
-if (reservedCPU != null)
-{
-    Console.WriteLine($"Available CPUs after return: {reservedCPU.Quantity}");
-    Console.WriteLine($"Reserved CPUs after return: {reservedCPU.ReservedQuantity}");
-
-    Console.WriteLine($"Available CPUs: {reservedCPU.Quantity}");
-    Console.WriteLine($"Reserved CPUs: {reservedCPU.ReservedQuantity}");
-}
-
-var houstonCPU = inventory.FirstOrDefault(item =>
-    item.StoreID == 1 &&
-    item.ProductID == 1);
-
-var dallasCPU = inventory.FirstOrDefault(item =>
-    item.StoreID == 2 &&
-    item.ProductID == 1);
-
-if (houstonCPU != null)
-{
-    Console.WriteLine($"Houston CPUs: {houstonCPU.Quantity}");
-}
-
-if (dallasCPU != null)
-{
-    Console.WriteLine($"Dallas CPUs: {dallasCPU.Quantity}");
-}
-
-var gpuInventory = inventory.FirstOrDefault(item =>
-    item.StoreID == 1 &&
-    item.ProductID == 5);
-
-if (gpuInventory != null)
-{
-    Console.WriteLine($"GPUs remaining in Houston: {gpuInventory.Quantity}");
-}
-
-var createdProduct = products.FirstOrDefault(p =>
-    p.ProductID == 9);
-
-if (createdProduct != null)
-{
-    Console.WriteLine($"Created Product: {createdProduct.ProductName}");
-}
-
-// End of Message and variable center.
-
-
-// Delete test is isolated here to avoid accidental deletion of products
-// used during runtime. We want the product to delete after everything
-// needed has been used for display testing.
-
-
+    ShowSection("10. Delete Product");
     DeleteProduct(products, 9);
+    DisplayProduct(products, 9);
 
+    ShowSection("Demonstration Complete");
 }
-// Method Center
+
+static void ShowSection(string title)
+{
+    Console.WriteLine();
+    Console.WriteLine(new string('-', 45));
+    Console.WriteLine(title);
+    Console.WriteLine(new string('-', 45));
+}
 
 static void AddToCart(
     List<CartItem> cart,
@@ -151,6 +106,12 @@ static void AddToCart(
     int productID,
     int quantity)
 {
+    if (quantity <= 0)
+    {
+        Console.WriteLine("Quantity must be greater than zero.");
+        return;
+    }
+
     var inventoryItem = inventory.FirstOrDefault(item =>
         item.StoreID == storeID &&
         item.ProductID == productID);
@@ -164,12 +125,7 @@ static void AddToCart(
     var cartItem = cart.FirstOrDefault(item =>
         item.ProductID == productID);
 
-    int quantityAlreadyInCart = 0;
-
-    if (cartItem != null)
-    {
-        quantityAlreadyInCart = cartItem.Quantity;
-    }
+    int quantityAlreadyInCart = cartItem?.Quantity ?? 0;
 
     if (inventoryItem.Quantity < quantityAlreadyInCart + quantity)
     {
@@ -189,31 +145,52 @@ static void AddToCart(
             Quantity = quantity
         });
     }
-}
 
+    Console.WriteLine(
+        $"Added {quantity} of Product ID {productID} to cart.");
+}
 
 static void Checkout(
     List<CartItem> cart,
     List<Inventory> inventory,
     int storeID)
 {
+    if (cart.Count == 0)
+    {
+        Console.WriteLine("Your cart is empty.");
+        return;
+    }
+
+    // Verify all quantities before modifying inventory.
     foreach (var cartItem in cart)
     {
         var inventoryItem = inventory.FirstOrDefault(item =>
             item.StoreID == storeID &&
             item.ProductID == cartItem.ProductID);
 
-        if (inventoryItem != null)
+        if (inventoryItem == null ||
+            inventoryItem.Quantity < cartItem.Quantity)
         {
-            inventoryItem.Quantity -= cartItem.Quantity;
+            Console.WriteLine(
+                "Checkout failed: insufficient inventory.");
+            return;
         }
+    }
+
+    foreach (var cartItem in cart)
+    {
+        var inventoryItem = inventory.First(item =>
+            item.StoreID == storeID &&
+            item.ProductID == cartItem.ProductID);
+
+        inventoryItem.Quantity -= cartItem.Quantity;
     }
 
     cart.Clear();
 
-    Console.WriteLine("Checkout complete. Thank you for your purchase.");
+    Console.WriteLine(
+        "Checkout complete. Thank you for your purchase.");
 }
-
 
 static void DisplayOrderSummary(
     List<CartItem> cartItems,
@@ -228,21 +205,25 @@ static void DisplayOrderSummary(
         var product = products.FirstOrDefault(p =>
             p.ProductID == cartItem.ProductID);
 
-        if (product != null)
+        if (product == null)
         {
-            decimal itemTotal =
-                product.ProductPrice * cartItem.Quantity;
-
-            total += itemTotal;
-
-            Console.WriteLine(
-                $"{product.ProductName} - Quantity: {cartItem.Quantity}, Price: {product.ProductPrice:C}, Total: {itemTotal:C}");
+            continue;
         }
+
+        decimal itemTotal =
+            product.ProductPrice * cartItem.Quantity;
+
+        total += itemTotal;
+
+        Console.WriteLine(
+            $"{product.ProductName} - " +
+            $"Quantity: {cartItem.Quantity}, " +
+            $"Price: {product.ProductPrice:C}, " +
+            $"Total: {itemTotal:C}");
     }
 
     Console.WriteLine($"Total Order Cost: {total:C}");
 }
-
 
 static void MoveInventory(
     List<Inventory> inventory,
@@ -251,6 +232,12 @@ static void MoveInventory(
     int productID,
     int quantity)
 {
+    if (quantity <= 0 || fromStoreID == toStoreID)
+    {
+        Console.WriteLine("Invalid transfer request.");
+        return;
+    }
+
     var fromInventoryItem = inventory.FirstOrDefault(item =>
         item.StoreID == fromStoreID &&
         item.ProductID == productID);
@@ -261,13 +248,15 @@ static void MoveInventory(
 
     if (fromInventoryItem == null || toInventoryItem == null)
     {
-        Console.WriteLine("Product is not available in one of the stores.");
+        Console.WriteLine(
+            "Product is not available in one of the stores.");
         return;
     }
 
     if (fromInventoryItem.Quantity < quantity)
     {
-        Console.WriteLine("Not enough inventory available to move.");
+        Console.WriteLine(
+            "Not enough inventory available to move.");
         return;
     }
 
@@ -275,9 +264,9 @@ static void MoveInventory(
     toInventoryItem.Quantity += quantity;
 
     Console.WriteLine(
-        $"Moved {quantity} of Product ID {productID} from Store {fromStoreID} to Store {toStoreID}.");
+        $"Moved {quantity} of Product ID {productID} " +
+        $"from Store {fromStoreID} to Store {toStoreID}.");
 }
-
 
 static void DisplayInventory(
     List<Inventory> inventory,
@@ -295,11 +284,12 @@ static void DisplayInventory(
         if (product != null)
         {
             Console.WriteLine(
-                $"{product.ProductName} - Quantity: {inventoryItem.Quantity}");
+                $"{product.ProductName} - " +
+                $"Available: {inventoryItem.Quantity}, " +
+                $"Reserved: {inventoryItem.ReservedQuantity}");
         }
     }
 }
-
 
 static void MoveItemToReserve(
     List<Inventory> inventory,
@@ -307,19 +297,27 @@ static void MoveItemToReserve(
     int productID,
     int quantity)
 {
+    if (quantity <= 0)
+    {
+        Console.WriteLine("Quantity must be greater than zero.");
+        return;
+    }
+
     var inventoryItem = inventory.FirstOrDefault(item =>
         item.StoreID == storeID &&
         item.ProductID == productID);
 
     if (inventoryItem == null)
     {
-        Console.WriteLine("Product is not available in the store.");
+        Console.WriteLine(
+            "Product is not available in the store.");
         return;
     }
 
     if (inventoryItem.Quantity < quantity)
     {
-        Console.WriteLine("Not enough inventory available to move to reserve.");
+        Console.WriteLine(
+            "Not enough inventory available to reserve.");
         return;
     }
 
@@ -327,9 +325,9 @@ static void MoveItemToReserve(
     inventoryItem.ReservedQuantity += quantity;
 
     Console.WriteLine(
-        $"Moved {quantity} of Product ID {productID} to reserve in Store {storeID}.");
+        $"Reserved {quantity} of Product ID {productID} " +
+        $"in Store {storeID}.");
 }
-
 
 static void ReturnItemFromReserve(
     List<Inventory> inventory,
@@ -337,29 +335,37 @@ static void ReturnItemFromReserve(
     int productID,
     int quantity)
 {
+    if (quantity <= 0)
+    {
+        Console.WriteLine("Quantity must be greater than zero.");
+        return;
+    }
+
     var inventoryItem = inventory.FirstOrDefault(item =>
         item.StoreID == storeID &&
         item.ProductID == productID);
 
     if (inventoryItem == null)
     {
-        Console.WriteLine("Product is not available in this store.");
+        Console.WriteLine(
+            "Product is not available in this store.");
         return;
     }
-    else if (inventoryItem.ReservedQuantity < quantity)
-    {
-        Console.WriteLine("The requested amount exceeds the reserved quantity.");
-        return;
-    }
-    else
-    {
-        inventoryItem.ReservedQuantity -= quantity;
-        inventoryItem.Quantity += quantity;
 
-        Console.WriteLine("Thank you for bringing this back into inventory!");
+    if (inventoryItem.ReservedQuantity < quantity)
+    {
+        Console.WriteLine(
+            "The requested amount exceeds reserved quantity.");
+        return;
     }
+
+    inventoryItem.ReservedQuantity -= quantity;
+    inventoryItem.Quantity += quantity;
+
+    Console.WriteLine(
+        $"Returned {quantity} of Product ID {productID} " +
+        "to available inventory.");
 }
-
 
 static void AddProductToInventory(
     List<Inventory> inventory,
@@ -367,6 +373,12 @@ static void AddProductToInventory(
     int productID,
     int quantity)
 {
+    if (quantity <= 0)
+    {
+        Console.WriteLine("Quantity must be greater than zero.");
+        return;
+    }
+
     var inventoryItem = inventory.FirstOrDefault(item =>
         item.StoreID == storeID &&
         item.ProductID == productID);
@@ -385,8 +397,11 @@ static void AddProductToInventory(
     {
         inventoryItem.Quantity += quantity;
     }
-}
 
+    Console.WriteLine(
+        $"Added {quantity} units of Product ID {productID} " +
+        $"to Store {storeID}.");
+}
 
 static void CreateProduct(
     List<Product> products,
@@ -395,30 +410,33 @@ static void CreateProduct(
     string productCategory,
     decimal productPrice)
 {
-    var existingProduct = products.FirstOrDefault(p =>
-        p.ProductID == productID);
-
-    if (existingProduct != null)
+    if (products.Any(p => p.ProductID == productID))
     {
         Console.WriteLine(
-            "Please choose another product ID, the suggested ID is taken.");
-
+            "Please choose another product ID. This ID is taken.");
         return;
     }
 
-    var newProduct = new Product
+    if (productID <= 0 ||
+        string.IsNullOrWhiteSpace(productName) ||
+        string.IsNullOrWhiteSpace(productCategory) ||
+        productPrice < 0)
+    {
+        Console.WriteLine("Invalid product information.");
+        return;
+    }
+
+    products.Add(new Product
     {
         ProductID = productID,
         ProductName = productName,
         ProductCategory = productCategory,
         ProductPrice = productPrice
-    };
+    });
 
-    products.Add(newProduct);
-
-    Console.WriteLine($"{productName} was successfully created.");
+    Console.WriteLine(
+        $"{productName} was successfully created.");
 }
-
 
 static void UpdateProduct(
     List<Product> products,
@@ -430,21 +448,27 @@ static void UpdateProduct(
     var product = products.FirstOrDefault(p =>
         p.ProductID == productID);
 
-    if (product != null)
-    {
-        product.ProductName = productName;
-        product.ProductCategory = productCategory;
-        product.ProductPrice = productPrice;
-
-        Console.WriteLine(
-            $"Product ID {productID} updated successfully.");
-    }
-    else
+    if (product == null)
     {
         Console.WriteLine("Product not found.");
+        return;
     }
-}
 
+    if (string.IsNullOrWhiteSpace(productName) ||
+        string.IsNullOrWhiteSpace(productCategory) ||
+        productPrice < 0)
+    {
+        Console.WriteLine("Invalid product information.");
+        return;
+    }
+
+    product.ProductName = productName;
+    product.ProductCategory = productCategory;
+    product.ProductPrice = productPrice;
+
+    Console.WriteLine(
+        $"Product ID {productID} updated successfully.");
+}
 
 static void DisplayProduct(
     List<Product> products,
@@ -453,19 +477,17 @@ static void DisplayProduct(
     var product = products.FirstOrDefault(p =>
         p.ProductID == productID);
 
-    if (product != null)
-    {
-        Console.WriteLine($"Product ID: {product.ProductID}");
-        Console.WriteLine($"Product Name: {product.ProductName}");
-        Console.WriteLine($"Product Category: {product.ProductCategory}");
-        Console.WriteLine($"Product Price: {product.ProductPrice:C}");
-    }
-    else
+    if (product == null)
     {
         Console.WriteLine("Product not found.");
+        return;
     }
-}
 
+    Console.WriteLine($"Product ID: {product.ProductID}");
+    Console.WriteLine($"Product Name: {product.ProductName}");
+    Console.WriteLine($"Product Category: {product.ProductCategory}");
+    Console.WriteLine($"Product Price: {product.ProductPrice:C}");
+}
 
 static void DeleteProduct(
     List<Product> products,
@@ -474,17 +496,14 @@ static void DeleteProduct(
     var product = products.FirstOrDefault(p =>
         p.ProductID == productID);
 
-    if (product != null)
-    {
-        products.Remove(product);
-
-        Console.WriteLine(
-            $"Product ID {productID} deleted successfully.");
-    }
-    else
+    if (product == null)
     {
         Console.WriteLine("Product not found.");
+        return;
     }
-}
 
-// End of Method Center
+    products.Remove(product);
+
+    Console.WriteLine(
+        $"Product ID {productID} deleted successfully.");
+}

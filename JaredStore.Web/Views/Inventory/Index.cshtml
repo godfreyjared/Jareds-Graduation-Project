@@ -174,6 +174,78 @@
     <section class="ccs-dashboard-section ccs-transfer-panel">
 
         <div class="ccs-section-heading">
+            <span class="ccs-eyebrow">EMPLOYEE INVENTORY CONTROL</span>
+            <h2>Adjust Available Stock</h2>
+            <p>Add new units or remove available units without changing customer or employee reservations.</p>
+        </div>
+
+        <form asp-controller="Inventory" asp-action="AdjustStock" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="ccs-form-grid">
+                <div class="ccs-field">
+                    <label for="adjustStoreID">Store</label>
+                    <select id="adjustStoreID" name="storeID" class="form-select" required>
+                        <option value="1" selected="@(selectedStoreID == 1)">Houston</option>
+                        <option value="2" selected="@(selectedStoreID == 2)">Dallas</option>
+                        <option value="3" selected="@(selectedStoreID == 3)">San Antonio</option>
+                    </select>
+                </div>
+
+                <div class="ccs-field">
+                    <label for="adjustProductID">Product</label>
+                    <select id="adjustProductID" name="productID" class="form-select" required>
+                        @foreach (var product in products)
+                        {
+                            <option value="@product.ProductID">@product.ProductName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="ccs-field">
+                    <label for="adjustQuantity">Quantity to Adjust</label>
+                    <input id="adjustQuantity" name="quantity" type="number" min="1" step="1"
+                           class="form-control" placeholder="Enter number of units" required />
+                </div>
+
+                <div class="ccs-field">
+                    <label for="adjustOperation">Operation</label>
+                    <select id="adjustOperation" name="adjustmentType" class="form-select" required>
+                        <option value="add">Add Stock</option>
+                        <option value="remove">Remove Available Stock</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="ccs-auth-panel">
+                <div class="ccs-section-heading">
+                    <span class="ccs-eyebrow">EMPLOYEE AUTHORIZATION</span>
+                    <h3>Verify Credentials</h3>
+                    <p>Only authorized employees may change available quantities.</p>
+                </div>
+                <div class="ccs-form-grid">
+                    <div class="ccs-field">
+                        <label for="adjustUsername">Employee Username</label>
+                        <input id="adjustUsername" name="username" type="text"
+                               class="form-control" autocomplete="username" required />
+                    </div>
+                    <div class="ccs-field">
+                        <label for="adjustPassword">Employee Password</label>
+                        <input id="adjustPassword" name="password" type="password"
+                               class="form-control" autocomplete="off" required />
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg ccs-transfer-button">
+                Confirm Stock Adjustment &rarr;
+            </button>
+        </form>
+    </section>
+
+    <section class="ccs-dashboard-section ccs-transfer-panel">
+
+        <div class="ccs-section-heading">
             <span class="ccs-eyebrow">AUTHORIZED OPERATIONS</span>
             <h2>Transfer Inventory</h2>
             <p>

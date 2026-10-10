@@ -23,12 +23,16 @@
 
 <h1>Continental Computing Solutions</h1>
 
+
 @if (TempData["Message"] != null)
 {
-    <p style="color: red; font-weight: bold;">
+    bool isError = TempData["MessageType"]?.ToString() == "error";
+
+    <p class="@(isError ? "text-danger" : "text-success") fw-bold">
         @TempData["Message"]
     </p>
 }
+
 
 @if (selectedStoreID == null)
 {

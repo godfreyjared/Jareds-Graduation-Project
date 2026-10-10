@@ -2,8 +2,7 @@
 {
     public static class EmployeeAccess
     {
-        // DEMO ONLY: Replace with secure authentication
-        // and credential storage in a production application.
+        // DEMO ONLY: For demo purposes, I have hardcoded a single employee username and password. In a real application, you would want to implement a proper authentication system with hashed passwords and user management.
         public static bool IsValid(string? username, string? password)
         {
             return username == "employee1"

@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Jared_s_Graduation_Project;
 
 namespace JaredStore.Web.Controllers
@@ -9,7 +8,7 @@ namespace JaredStore.Web.Controllers
         // One shared cart and selected store for this demo
         private static readonly List<CartItem> cart = [];
 
-        private static int? selectedStoreID = null;
+        private static int? selectedStoreID;
 
         // Allow other controllers to see the selected store
         public static int? SelectedStoreID => selectedStoreID;
@@ -59,9 +58,8 @@ namespace JaredStore.Web.Controllers
                 return RedirectToAction("Index", "Products");
             }
 
-            var inventoryItem = StoreData.Inventory.FirstOrDefault(item =>
-                item.StoreID == selectedStoreID.Value &&
-                item.ProductID == productID);
+            var inventoryItem = FindInventory(
+                selectedStoreID.Value, productID);
 
             if (inventoryItem == null || inventoryItem.Quantity <= 0)
             {
@@ -109,9 +107,8 @@ namespace JaredStore.Web.Controllers
             var existingItem = cart.FirstOrDefault(item =>
                 item.ProductID == productID);
 
-            var inventoryItem = StoreData.Inventory.FirstOrDefault(item =>
-                item.StoreID == selectedStoreID.Value &&
-                item.ProductID == productID);
+            var inventoryItem = FindInventory(
+                selectedStoreID.Value, productID);
 
             if (existingItem != null)
             {
@@ -156,9 +153,8 @@ namespace JaredStore.Web.Controllers
                         product.ProductPrice * cartItem.Quantity;
                 }
 
-                var inventoryItem = StoreData.Inventory.FirstOrDefault(item =>
-                    item.StoreID == selectedStoreID.Value &&
-                    item.ProductID == cartItem.ProductID);
+                var inventoryItem = FindInventory(
+                    selectedStoreID.Value, cartItem.ProductID);
 
                 if (inventoryItem != null)
                 {
@@ -175,6 +171,15 @@ namespace JaredStore.Web.Controllers
             ViewBag.OrderTotal = orderTotal;
 
             return View("Checkout");
+        }
+
+        // Shared inventory lookup
+        private static Inventory? FindInventory(
+            int storeID, int productID)
+        {
+            return StoreData.Inventory.FirstOrDefault(item =>
+                item.StoreID == storeID &&
+                item.ProductID == productID);
         }
     }
 }

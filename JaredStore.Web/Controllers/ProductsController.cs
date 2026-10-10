@@ -55,15 +55,18 @@ namespace JaredStore.Web.Controllers
         {
             if (!EmployeeAccess.IsValid(username, password))
             {
-                ViewBag.Message = "Invalid employee username or password.";
+                ViewBag.Message =
+                    "Invalid employee username or password.";
+
                 return View();
             }
 
-            if (string.IsNullOrWhiteSpace(productName) ||
-                string.IsNullOrWhiteSpace(productCategory) ||
-                productPrice <= 0)
+            if (!IsValidProduct(
+                productName, productCategory, productPrice))
             {
-                ViewBag.Message = "Please enter valid product information.";
+                ViewBag.Message =
+                    "Please enter valid product information.";
+
                 return View();
             }
 
@@ -135,15 +138,18 @@ namespace JaredStore.Web.Controllers
 
             if (!EmployeeAccess.IsValid(username, password))
             {
-                ViewBag.Message = "Invalid employee username or password.";
+                ViewBag.Message =
+                    "Invalid employee username or password.";
+
                 return View(product);
             }
 
-            if (string.IsNullOrWhiteSpace(productName) ||
-                string.IsNullOrWhiteSpace(productCategory) ||
-                productPrice <= 0)
+            if (!IsValidProduct(
+                productName, productCategory, productPrice))
             {
-                ViewBag.Message = "Please enter valid product information.";
+                ViewBag.Message =
+                    "Please enter valid product information.";
+
                 return View(product);
             }
 
@@ -202,7 +208,7 @@ namespace JaredStore.Web.Controllers
             if (hasReservations)
             {
                 TempData["Message"] =
-                    "Cannot delete this product while items are reserved in a cart.";
+                    "Cannot delete this product while inventory is reserved.";
 
                 return RedirectToAction("Index");
             }
@@ -216,6 +222,17 @@ namespace JaredStore.Web.Controllers
                 $"{product.ProductName} deleted successfully.";
 
             return RedirectToAction("Index");
+        }
+
+        // Shared validation for creating and editing products
+        private static bool IsValidProduct(
+            string? productName,
+            string? productCategory,
+            decimal productPrice)
+        {
+            return !string.IsNullOrWhiteSpace(productName)
+                && !string.IsNullOrWhiteSpace(productCategory)
+                && productPrice > 0;
         }
     }
 }
