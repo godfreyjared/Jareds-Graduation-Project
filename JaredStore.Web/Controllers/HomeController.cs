@@ -21,3 +21,7 @@ namespace JaredStore.Web.Controllers
         }
     }
 }
+
+//The HomeController manages what happens when a user visits the website's homepage.
+//The Index() method uses return View() to tell ASP.NET MVC to display the homepage, typically located at Views/Home/Index.cshtml.
+//The Error() method handles errors by displaying an error page with a request ID to help identify and troubleshoot problems.
